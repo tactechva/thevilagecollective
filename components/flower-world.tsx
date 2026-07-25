@@ -154,12 +154,16 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const camR = useTransform(p, keys, rs);
 
   /* the vine draws itself just ahead of the camera */
-  const draw = useTransform(p, [intro * 0.5, outro], [0.06, 1]);
+  const draw = useTransform(p, [0.02, outro], [0.012, 1]);
 
-  /* act one, over the top of the world */
-  const titleOpacity = useTransform(p, [0, 0.045, 0.085], [1, 1, 0]);
-  const titleY = useTransform(p, [0, 0.085], ["0vh", "-7vh"]);
-  const hint = useTransform(p, [0, 0.03], [1, 0]);
+  /*
+    The arrival holds until it has finished FORMING, then departs. It used to start
+    fading at 0.045 while its own words were still assembling until 0.072, so the
+    headline was dissolving before it existed.
+  */
+  const titleOpacity = useTransform(p, [0, 0.082, 0.118], [1, 1, 0]);
+  const titleY = useTransform(p, [0, 0.118], ["0vh", "-8vh"]);
+  const hint = useTransform(p, [0, 0.026], [1, 0]);
   const outroOpacity = useTransform(p, [0.955, 0.99], [0, 1]);
 
   if (reduce) return <StaticSeasons seasons={seasons} />;
@@ -214,7 +218,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
                 strokeLinecap="round"
                 style={{ pathLength: draw }}
               />
-              <FieldFoliage />
+              <FieldFoliage p={p} />
             </svg>
 
             {seasons.slice(0, n).map((s, i) => (
@@ -225,7 +229,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
                 index={i}
                 pos={STATIONS[i]}
                 p={p}
-                gate={0.096}
+                gate={0.108}
               />
             ))}
           </motion.div>
@@ -234,25 +238,25 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
         {/* ── arrival, over the world ── */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6">
           <motion.div className="text-center" style={{ opacity: titleOpacity, y: titleY }}>
-            <Opening />
+            <FormingWreath p={p} />
             <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
-              Every season of life
-              <br />
-              deserves a <span className="text-bell-deep">village</span>
+              <span className="block">Every season of life</span>
+              {/* the second line writes itself word by word as you scroll */}
+              <FormingLine p={p} words={["deserves", "a", "village"]} from={0.006} to={0.062} accentLast />
             </h1>
-            <p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]">
-              Thirty-nine local businesses across Hampton Roads, gathered by a woman who
-              knows exactly who to call.
-            </p>
+            <FormingParagraph p={p} from={0.03} to={0.072} />
           </motion.div>
 
           <motion.p
             className="eyebrow absolute bottom-9 left-1/2 -translate-x-1/2"
             style={{ opacity: hint }}
           >
-            Scroll to fly through the village
+            Keep scrolling &mdash; it grows as you go
           </motion.p>
         </div>
+
+        {/* The intro's wreath is not thrown away: it shrinks, docks, and stays. */}
+        <DockedMark p={p} />
 
         {/* ── the last thing you see ── */}
         <motion.div
@@ -309,17 +313,22 @@ function Station({
     p, so it was already ~26% visible at scroll zero and collided with the hero.
   */
   const inAt = Math.max(at - w * 1.9, gate);
-  const opacity = useTransform(
-    p,
-    [inAt, at - w * 0.45, at + w * 0.45, at + w * 1.9],
-    [0, 1, 1, 0.06],
-  );
-  const scale = useTransform(p, [inAt, at, at + w * 1.9], [0.86, 1, 1.1]);
-  const bloomSpin = useTransform(p, [inAt, at + w * 2], [-90, 40]);
-  const bloomScale = useTransform(p, [inAt, at - w * 0.2], [0.15, 1]);
+  /*
+    Every later keyframe is derived FROM inAt so the input array is guaranteed
+    monotonically increasing. It was not: for station 0 the gate (0.108) exceeded
+    `at - w*0.45` (0.1075), which is an invalid useTransform range — Motion
+    returned opacity 1 and the first station was fully visible at scroll zero.
+  */
+  const hold = Math.max(at - w * 0.45, inAt + 0.01);
+  const fade = Math.max(at + w * 0.45, hold + 0.01);
+  const gone = Math.max(at + w * 1.9, fade + 0.01);
+
+  const opacity = useTransform(p, [inAt, hold, fade, gone], [0, 1, 1, 0.06]);
+  const scale = useTransform(p, [inAt, Math.max(at, hold + 0.005), gone], [0.86, 1, 1.1]);
   const textX = useTransform(p, [inAt, at + w * 1.6], [70, -70]);
 
   const flip = index % 2 === 1;
+  const words = season.label.split(" ");
 
   return (
     <motion.div
@@ -344,20 +353,39 @@ function Station({
           flip ? "sm:flex-row-reverse sm:text-right" : "sm:flex-row"
         }`}
       >
-        <motion.div
-          className="shrink-0"
-          style={{ rotate: bloomSpin, scale: bloomScale, transformOrigin: "50% 50%" }}
-        >
-          <Bloom />
-        </motion.div>
+        {/* the flower opens ONE PETAL AT A TIME as the camera closes on it */}
+        <div className="shrink-0">
+          <svg
+            viewBox="0 0 120 120"
+            className="h-[86px] w-[86px] overflow-visible sm:h-[168px] sm:w-[168px]"
+            aria-hidden="true"
+          >
+            <ScrollBloom p={p} cx={60} cy={60} r={1} from={inAt} to={at - w * 0.15} />
+          </svg>
+        </div>
 
-        <motion.div className="min-w-0 flex-1" style={{ x: textX }}>
-          <Link href={`/seasons/${season.slug}`} className="group block">
+        {/*
+          Text always sits on clean ground. The vine wanders through station
+          coordinates by design, so without this the stroke cut straight through
+          the words. A feathered paper scrim (no hard edge, so it never reads as a
+          box) guarantees legibility over any graphic behind it.
+        */}
+        <motion.div className="relative z-10 min-w-0 flex-1" style={{ x: textX }}>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-x-10 -inset-y-8"
+            style={{
+              background:
+                "radial-gradient(70% 60% at 40% 50%, #f2f1e6 0%, #f2f1e6 58%, rgba(242,241,230,0.82) 76%, rgba(242,241,230,0) 100%)",
+            }}
+          />
+          <Link href={`/seasons/${season.slug}`} className="group relative block">
             <p className="eyebrow">
               {String(index + 1).padStart(2, "0")} &nbsp;·&nbsp; {season.count} in your village
             </p>
             <h2 className="display mt-3 text-[clamp(2.1rem,5.4vw,4.2rem)] leading-[1.01] transition-colors duration-500 group-hover:text-bell-deep">
-              {season.label}
+              {/* the name writes itself in as you arrive */}
+              <FormingLine p={p} words={words} from={inAt + w * 0.2} to={at - w * 0.1} />
             </h2>
             <p
               className={`prose-warm mt-4 max-w-[34ch] text-[15px] ${flip ? "sm:ml-auto" : ""}`}
@@ -400,44 +428,195 @@ function Petals({ r = 1, cx = 60, cy = 60 }: { r?: number; cx?: number; cy?: num
   );
 }
 
-function Bloom() {
+/* ── forming primitives: everything below is a function of SCROLL, not time ── */
+
+/** A line of display type that assembles word by word as you scroll. */
+function FormingLine({
+  p,
+  words,
+  from,
+  to,
+  accentLast = false,
+}: {
+  p: MotionValue<number>;
+  words: string[];
+  from: number;
+  to: number;
+  accentLast?: boolean;
+}) {
+  const step = (to - from) / Math.max(words.length, 1);
   return (
-    <svg viewBox="0 0 120 120" className="h-[86px] w-[86px] overflow-visible sm:h-[168px] sm:w-[168px]" aria-hidden="true">
-      <Petals />
-    </svg>
+    <span className="block">
+      {words.map((word, i) => (
+        <FormingWord
+          key={`${word}-${i}`}
+          p={p}
+          word={word}
+          start={from + i * step}
+          end={from + (i + 1.4) * step}
+          accent={accentLast && i === words.length - 1}
+        />
+      ))}
+    </span>
   );
 }
 
-function Opening() {
-  const reduce = useReducedMotion();
-  const ease = [0.16, 1, 0.3, 1] as const;
+function FormingWord({
+  p,
+  word,
+  start,
+  end,
+  accent,
+}: {
+  p: MotionValue<number>;
+  word: string;
+  start: number;
+  end: number;
+  accent?: boolean;
+}) {
+  const opacity = useTransform(p, [start, end], [0, 1]);
+  const y = useTransform(p, [start, end], [26, 0]);
+  const blur = useTransform(p, [start, end], [7, 0]);
+  const filter = useTransform(blur, (b) => `blur(${b}px)`);
+  return (
+    <motion.span
+      className={`inline-block ${accent ? "text-bell-deep" : ""}`}
+      style={{ opacity, y, filter }}
+    >
+      {word}&nbsp;
+    </motion.span>
+  );
+}
+
+function FormingParagraph({ p, from, to }: { p: MotionValue<number>; from: number; to: number }) {
+  const opacity = useTransform(p, [from, to], [0, 1]);
+  const y = useTransform(p, [from, to], [16, 0]);
+  return (
+    <motion.p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]" style={{ opacity, y }}>
+      Thirty-nine local businesses across Hampton Roads, gathered by a woman who knows exactly
+      who to call.
+    </motion.p>
+  );
+}
+
+/** One forget-me-not whose five petals open one at a time, on scroll. */
+function ScrollBloom({
+  p,
+  cx,
+  cy,
+  r,
+  from,
+  to,
+}: {
+  p: MotionValue<number>;
+  cx: number;
+  cy: number;
+  r: number;
+  from: number;
+  to: number;
+}) {
+  const span = Math.max(to - from, 0.001);
+  const step = span / 6;
+  const eye = useTransform(p, [from + step * 4, from + step * 6], [0, 1]);
+  return (
+    <g>
+      {[0, 72, 144, 216, 288].map((deg, j) => (
+        <ScrollPetal
+          key={deg}
+          p={p}
+          cx={cx}
+          cy={cy}
+          r={r}
+          deg={deg}
+          dark={j % 2 !== 0}
+          from={from + step * j}
+          to={from + step * (j + 1.8)}
+        />
+      ))}
+      <motion.circle
+        cx={cx}
+        cy={cy}
+        r={9 * r}
+        fill={POLLEN}
+        style={{ scale: eye, opacity: eye, transformBox: "fill-box", transformOrigin: "center" }}
+      />
+    </g>
+  );
+}
+
+function ScrollPetal({
+  p,
+  cx,
+  cy,
+  r,
+  deg,
+  dark,
+  from,
+  to,
+}: {
+  p: MotionValue<number>;
+  cx: number;
+  cy: number;
+  r: number;
+  deg: number;
+  dark: boolean;
+  from: number;
+  to: number;
+}) {
+  const t = useTransform(p, [from, to], [0, 1]);
+  const scale = useTransform(t, [0, 1], [0.06, 1]);
+  const spin = useTransform(t, [0, 1], [deg - 52, deg]);
+  const transform = useTransform(spin, (s) => `rotate(${s} ${cx} ${cy})`);
+  return (
+    <motion.ellipse
+      cx={cx}
+      cy={cy - 26 * r}
+      rx={18 * r}
+      ry={23 * r}
+      fill={dark ? BLUE_DEEP : BLUE}
+      fillOpacity={dark ? 0.82 : 0.96}
+      style={{ scale, opacity: t, transformBox: "fill-box", transformOrigin: "50% 100%" }}
+      transform={transform as unknown as string}
+    />
+  );
+}
+
+/*
+  The wreath ASSEMBLES under the scroll. At rest you get the first stroke of the
+  brass arc and nothing else — her mark rises into it, then the forget-me-nots
+  open at its base, one petal at a time. Scroll back up and it un-builds.
+*/
+function FormingWreath({ p }: { p: MotionValue<number> }) {
+  /*
+    Partly formed at rest, completed by you. A fully unformed arrival read as a
+    broken empty page; a fully formed one is the pre-animated thing we are avoiding.
+    So the arc starts ~40% drawn and her mark is already faintly present.
+  */
+  const arc = useTransform(p, [0, 0.05], [0.4, 1]);
+  const markOpacity = useTransform(p, [0, 0.042], [0.42, 1]);
+  const markScale = useTransform(p, [0, 0.042], [0.955, 1]);
+
   return (
     <div className="relative mx-auto h-[min(56vw,290px)] w-[min(56vw,290px)]">
-      <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
+      <svg
+        viewBox="0 0 300 300"
+        className="absolute inset-0 h-full w-full overflow-visible"
+        aria-hidden="true"
+      >
         <motion.path
           d="M56 228 C 4 176, 10 84, 78 40 C 142 -4, 232 12, 272 74 C 296 112, 296 162, 272 200"
           fill="none"
           stroke={BRASS}
           strokeWidth="1.5"
-          strokeOpacity="0.55"
-          initial={{ pathLength: reduce ? 1 : 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: reduce ? 0 : 2.3, delay: reduce ? 0 : 0.25, ease }}
+          strokeOpacity="0.6"
+          style={{ pathLength: arc }}
         />
         {[
-          { cx: 224, cy: 242, r: 0.82 },
-          { cx: 262, cy: 218, r: 0.56 },
-          { cx: 200, cy: 272, r: 0.46 },
+          { cx: 224, cy: 242, r: 0.82, at: 0.04 },
+          { cx: 262, cy: 218, r: 0.56, at: 0.05 },
+          { cx: 200, cy: 272, r: 0.46, at: 0.06 },
         ].map((b, i) => (
-          <motion.g
-            key={i}
-            initial={{ scale: reduce ? 1 : 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: reduce ? 0.2 : 0.95, delay: reduce ? 0 : 1.5 + i * 0.15, ease }}
-            style={{ transformBox: "fill-box", transformOrigin: "center" }}
-          >
-            <Petals r={b.r} cx={b.cx} cy={b.cy} />
-          </motion.g>
+          <ScrollBloom key={i} p={p} cx={b.cx} cy={b.cy} r={b.r} from={b.at} to={b.at + 0.026} />
         ))}
       </svg>
       <motion.img
@@ -446,16 +625,33 @@ function Opening() {
         width={744}
         height={675}
         className="absolute inset-0 m-auto block h-auto w-[84%]"
-        initial={{ opacity: 0, scale: reduce ? 1 : 0.93 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: reduce ? 0.2 : 1.8, delay: reduce ? 0 : 0.35, ease }}
+        style={{ opacity: markOpacity, scale: markScale }}
       />
     </div>
   );
 }
 
+/*
+  The intro is not discarded. As the headline lifts away the wreath shrinks and
+  docks in the corner, and stays with you for the whole flight, turning slowly.
+*/
+function DockedMark({ p }: { p: MotionValue<number> }) {
+  const opacity = useTransform(p, [0.075, 0.115, 0.95, 0.985], [0, 1, 1, 0]);
+  const scale = useTransform(p, [0.075, 0.115], [0.45, 1]);
+  const rotate = useTransform(p, [0.115, 1], [-10, 10]);
+  return (
+    <motion.div
+      className="pointer-events-none absolute top-[68px] left-6 h-11 w-11 sm:left-10 sm:h-14 sm:w-14"
+      style={{ opacity, scale, rotate }}
+      aria-hidden="true"
+    >
+      <img src="/tvc-mark-keyed.png" alt="" className="h-full w-full object-contain" />
+    </motion.div>
+  );
+}
+
 /* leaves and buds scattered along the vine, inside the field's own SVG */
-function FieldFoliage() {
+function FieldFoliage({ p }: { p: MotionValue<number> }) {
   const items = STATIONS.flatMap((s, i) =>
     Array.from({ length: 5 }, (_, k) => {
       const t = (k + 1) / 6;
@@ -467,6 +663,7 @@ function FieldFoliage() {
         r: (i * 47 + k * 71) % 360,
         sc: 1 + ((i + k) % 3) * 0.35,
         dark: (i + k) % 2 === 0,
+        at: 0.03 + ((i + t) / STATIONS.length) * 0.88,
       };
     }),
   );
@@ -474,16 +671,31 @@ function FieldFoliage() {
   return (
     <g aria-hidden="true">
       {items.map((f, i) => (
-        <g
-          key={i}
-          transform={`translate(${f.x} ${f.y}) rotate(${f.r}) scale(${f.sc})`}
-          opacity={f.dark ? 0.5 : 0.32}
-        >
-          <path d="M0 0 C 22 -18, 48 -8, 46 18 C 22 32, 3 22, 0 0 Z" fill={f.dark ? SAGE : SAGE_PALE} />
-          <path d="M0 0 C 18 4, 34 10, 46 18" stroke="#f2f1e6" strokeWidth="1.4" fill="none" opacity="0.45" />
-        </g>
+        <Unfurl key={i} p={p} f={f} />
       ))}
     </g>
+  );
+}
+
+/* each leaf unfurls from its stem end as the vine reaches it */
+function Unfurl({
+  p,
+  f,
+}: {
+  p: MotionValue<number>;
+  f: { x: number; y: number; r: number; sc: number; dark: boolean; at: number };
+}) {
+  const t = useTransform(p, [f.at - 0.035, f.at + 0.02], [0, 1]);
+  const scale = useTransform(t, (v) => v * f.sc);
+  return (
+    <motion.g
+      transform={`translate(${f.x} ${f.y}) rotate(${f.r})`}
+      style={{ scale, opacity: t, transformBox: "fill-box", transformOrigin: "0% 50%" }}
+      opacity={f.dark ? 0.5 : 0.32}
+    >
+      <path d="M0 0 C 22 -18, 48 -8, 46 18 C 22 32, 3 22, 0 0 Z" fill={f.dark ? SAGE : SAGE_PALE} />
+      <path d="M0 0 C 18 4, 34 10, 46 18" stroke="#f2f1e6" strokeWidth="1.4" fill="none" opacity="0.45" />
+    </motion.g>
   );
 }
 
