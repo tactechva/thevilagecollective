@@ -81,12 +81,17 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const reduce = useReducedMotion();
   const n = Math.min(seasons.length, STATIONS.length);
 
-  /* the field is wider than a phone, so fit the camera to the viewport */
-  const [fit, setFit] = useState(0.72);
+  /*
+    Camera fit. On desktop we scale to the field's width. On a phone we deliberately
+    do NOT — fitting a 2900px field into 375px drove station text down to ~17px
+    headlines and ~8px body, which is unreadable. Phones stay close and get their
+    sense of space from the camera's travel instead of from a wide shot.
+  */
+  const [fit, setFit] = useState(0.8);
   useEffect(() => {
     const measure = () => {
       const w = window.innerWidth;
-      setFit(Math.max(0.4, Math.min(1.15, w / 1500)));
+      setFit(w < 700 ? 0.82 : Math.max(0.7, Math.min(1.15, w / 1500)));
     };
     measure();
     window.addEventListener("resize", measure);
@@ -107,11 +112,16 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const mids = Array.from({ length: n - 1 }, (_, i) => (stops[i] + stops[i + 1]) / 2);
 
   /* interleave station stops and the mid-points between them */
+  /*
+    The camera does NOT start centred on station 0 — that put the first station
+    directly behind the arrival headline. It starts above and left of it, so the
+    title has clean paper, then flies down onto the first bloom.
+  */
   const keys: number[] = [0];
-  const xs: number[] = [-STATIONS[0].x];
-  const ys: number[] = [-STATIONS[0].y];
-  const zs: number[] = [1.42];
-  const rs: number[] = [0];
+  const xs: number[] = [-STATIONS[0].x + 300];
+  const ys: number[] = [-STATIONS[0].y + 240];
+  const zs: number[] = [1.5];
+  const rs: number[] = [-2];
 
   for (let i = 0; i < n; i++) {
     keys.push(stops[i]);
@@ -166,6 +176,12 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           }}
         />
 
+        {/*
+          Ambient petals sit BEHIND the camera layer. Rendered on top they drifted
+          across the station text and cost legibility.
+        */}
+        <Drift />
+
         {/* ── the camera ────────────────────────────────────────────── */}
         <motion.div
           className="absolute top-1/2 left-1/2"
@@ -209,6 +225,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
                 index={i}
                 pos={STATIONS[i]}
                 p={p}
+                gate={0.096}
               />
             ))}
           </motion.div>
@@ -257,8 +274,6 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           </div>
         </motion.div>
 
-        {/* drifting petals, so the world is alive even when you stop */}
-        <Drift />
       </div>
     </div>
   );
@@ -278,23 +293,31 @@ function Station({
   index,
   pos,
   p,
+  gate,
 }: {
   season: Season;
   at: number;
   index: number;
   pos: { x: number; y: number; rot: number };
   p: MotionValue<number>;
+  /** No station may appear before this point — it is when the arrival title clears. */
+  gate: number;
 }) {
   const w = 0.1;
+  /*
+    Clamped to `gate`. Without it station 0's fade-in window started at a negative
+    p, so it was already ~26% visible at scroll zero and collided with the hero.
+  */
+  const inAt = Math.max(at - w * 1.9, gate);
   const opacity = useTransform(
     p,
-    [at - w * 1.9, at - w * 0.45, at + w * 0.45, at + w * 1.9],
+    [inAt, at - w * 0.45, at + w * 0.45, at + w * 1.9],
     [0, 1, 1, 0.06],
   );
-  const scale = useTransform(p, [at - w * 1.9, at, at + w * 1.9], [0.86, 1, 1.1]);
-  const bloomSpin = useTransform(p, [at - w * 2, at + w * 2], [-90, 40]);
-  const bloomScale = useTransform(p, [at - w * 1.6, at - w * 0.2], [0.15, 1]);
-  const textX = useTransform(p, [at - w * 1.6, at + w * 1.6], [70, -70]);
+  const scale = useTransform(p, [inAt, at, at + w * 1.9], [0.86, 1, 1.1]);
+  const bloomSpin = useTransform(p, [inAt, at + w * 2], [-90, 40]);
+  const bloomScale = useTransform(p, [inAt, at - w * 0.2], [0.15, 1]);
+  const textX = useTransform(p, [inAt, at + w * 1.6], [70, -70]);
 
   const flip = index % 2 === 1;
 
@@ -311,9 +334,14 @@ function Station({
         rotate: -pos.rot, /* counter the camera bank so text stays level */
       }}
     >
+      {/*
+        Stacked on a phone (bloom above the words, always left-aligned) and only
+        side-by-side with the alternating flip from sm up. The flipped right-align
+        was cramping text into a narrow column at 375px.
+      */}
       <div
-        className={`flex w-[min(88vw,1000px)] items-center gap-10 ${
-          flip ? "flex-row-reverse text-right" : ""
+        className={`flex w-[min(86vw,1000px)] flex-col items-start gap-5 sm:items-center sm:gap-10 ${
+          flip ? "sm:flex-row-reverse sm:text-right" : "sm:flex-row"
         }`}
       >
         <motion.div
@@ -332,7 +360,7 @@ function Station({
               {season.label}
             </h2>
             <p
-              className={`prose-warm mt-4 max-w-[34ch] text-[15px] ${flip ? "ml-auto" : ""}`}
+              className={`prose-warm mt-4 max-w-[34ch] text-[15px] ${flip ? "sm:ml-auto" : ""}`}
             >
               {season.blurb}
             </p>
@@ -374,7 +402,7 @@ function Petals({ r = 1, cx = 60, cy = 60 }: { r?: number; cx?: number; cy?: num
 
 function Bloom() {
   return (
-    <svg viewBox="0 0 120 120" className="h-[124px] w-[124px] overflow-visible sm:h-[168px] sm:w-[168px]" aria-hidden="true">
+    <svg viewBox="0 0 120 120" className="h-[86px] w-[86px] overflow-visible sm:h-[168px] sm:w-[168px]" aria-hidden="true">
       <Petals />
     </svg>
   );
