@@ -1,0 +1,1125 @@
+<!doctype html>
+<!--
+  THE COUNTY LEDGER — a visual language for The Village Collective, Vol. I
+  1. The page is a BOUND RECORD BOOK, not a document that scrolls: a dark cloth spine, cut
+     thumb tabs at the fore-edge, folio numerals, running heads, printer's catchwords.
+  2. THE RULES RULE. Hairline oxide-red verticals and carbon-blue feints are drawn first;
+     type, affixed photographs and wet blots are entered onto them afterward — and are
+     allowed to sit off the line, cross the rule, or bleed clean past the trim.
+  3. NOTHING IS RANKED. The ledger's only judgement is the column HOW SERVED; a member is
+     distinguished by the shape of her service, never by merit. The same brass key is
+     struck beside every entry, every time, at the same size.
+  Why it has not been done: the web's directory instinct is the CARD — an isolated, equal,
+  floating rectangle on empty ground. A ledger is the opposite instinct — continuous ruled
+  ground, shared columns, density as generosity, the eye travelling ACROSS not down. And
+  the emotional payload here is not a testimonial component: it is a real slip of paper,
+  torn and pinned into the gutter, typed in the proprietor's own hand.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Village Collective — Vol. I, A Register of Trades Kept by Hand</title>
+<meta name="description" content="The Village Collective: a hand-kept register of trusted local trades in Hampton Roads, Virginia. Every season of life deserves a village.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ultra&family=Petrona:ital,wght@0,300..800;1,300..700&family=Archivo+Narrow:wght@400..700&family=Special+Elite&family=Caveat:wght@400..600&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────── INK & PAPER ─────────────────────────── */
+:root{
+  --paper:#F0F0E4; --paper-lt:#F6F6EC; --paper-dp:#E7E7D8;
+  --putty:#DCD0C4; --putty-dp:#C9BBAD;
+  --ink:#303024; --ink-soft:#55554A; --ink-faint:#7D7D70;
+  --sage:#848460; --sage-dp:#545430;
+  --brass:#A89060; --brass-dp:#847854;
+  --blue:#6090C0; --blue-dp:#43709E;
+  --red:#9E4B36; --red-lt:#B4604A;
+  --feint:rgba(67,112,158,.22);
+  --hair:rgba(48,48,36,.30);
+  --rule:27px;
+  --spine:36px;
+  --thumb:44px;
+  --pad:clamp(14px,3.2vw,46px);
+  --f-slab:"Ultra",Rockwell,"Courier New",serif;
+  --f-body:"Petrona",Georgia,"Times New Roman",serif;
+  --f-data:"Archivo Narrow","Arial Narrow",Helvetica,sans-serif;
+  --f-type:"Special Elite","Courier New",monospace;
+  --f-hand:"Caveat","Bradley Hand",cursive;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper-dp); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:var(--rule);
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+::selection{background:rgba(96,144,192,.32)}
+
+/* paper grain, laid over everything */
+.grain{
+  position:fixed; inset:0; z-index:80; pointer-events:none; opacity:.55;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.34'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed; inset:0; z-index:79; pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(80,72,52,.16) 100%);
+}
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ─────────────────────────── THE VOLUME ─────────────────────────── */
+.volume{
+  position:relative; min-height:100vh;
+  padding-left:var(--spine); padding-right:var(--thumb);
+}
+/* dark cloth spine — the dark moment */
+.spine{
+  position:fixed; left:0; top:0; bottom:0; width:var(--spine); z-index:40;
+  background:
+    linear-gradient(90deg,#1E1E16 0%,#303024 42%,#3C3C2C 78%,#1A1A12 100%);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:6px 0 14px -6px rgba(24,24,14,.55);
+}
+.spine::before{
+  content:""; position:absolute; top:0; bottom:0; right:6px; width:0;
+  border-right:1px dashed rgba(168,144,96,.55);
+}
+.spine b{
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-family:var(--f-data); font-weight:600; font-size:10px;
+  letter-spacing:.34em; text-transform:uppercase;
+  color:var(--brass); white-space:nowrap; padding-right:4px;
+  text-shadow:0 1px 0 rgba(0,0,0,.6);
+}
+
+/* ─────────────────────────── THUMB INDEX (fore-edge cut tabs) ─────────────────────────── */
+.thumbs{
+  position:fixed; right:0; top:12vh; z-index:50; width:var(--thumb);
+  display:flex; flex-direction:column; gap:10px;
+}
+.thumbs .tabhead{
+  font-family:var(--f-data); font-size:8.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--ink-faint);
+  writing-mode:vertical-rl; margin:0 auto 4px; opacity:.8;
+}
+.tab{
+  appearance:none; border:0; cursor:pointer;
+  font-family:var(--f-data); font-weight:600; font-size:11px;
+  letter-spacing:.2em; text-transform:uppercase;
+  writing-mode:vertical-rl; text-orientation:mixed;
+  padding:20px 11px 20px 9px; margin-left:8px;
+  background:var(--putty); color:var(--ink-soft);
+  border-radius:0 4px 4px 0;
+  box-shadow:inset 0 0 0 1px rgba(48,48,36,.22), 2px 2px 0 rgba(48,48,36,.10);
+  transition:margin .22s ease, background .22s ease, color .22s ease;
+  position:relative;
+}
+.tab .n{font-family:var(--f-body);font-weight:700;letter-spacing:.06em;font-size:12px}
+.tab:hover{margin-left:2px;background:var(--paper-lt)}
+.tab[aria-selected="true"]{
+  margin-left:-14px; background:var(--ink); color:var(--paper);
+  box-shadow:inset 0 0 0 1px rgba(240,240,228,.25), 3px 3px 0 rgba(48,48,36,.22);
+}
+.tab[aria-selected="true"] .n{color:var(--brass)}
+.tab:focus-visible{outline:2px solid var(--blue-dp);outline-offset:2px}
+
+/* ─────────────────────────── LEAVES ─────────────────────────── */
+.leaf{
+  position:relative; background:var(--paper);
+  min-height:100vh; overflow:hidden;
+  box-shadow:inset 0 0 60px -30px rgba(84,84,48,.30);
+}
+.leaf[hidden]{display:none}
+.leaf.turn{animation:turn .42s cubic-bezier(.22,.7,.2,1) both}
+@keyframes turn{
+  from{opacity:0;transform:perspective(1600px) rotateY(-3.2deg) translateX(-10px)}
+  to{opacity:1;transform:none}
+}
+/* running head — scrolls away, it is not a nav bar */
+.runhead{
+  background:var(--ink); color:var(--paper-dp);
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:0 18px;
+  padding:7px var(--pad); font-family:var(--f-data); font-size:9.5px;
+  letter-spacing:.26em; text-transform:uppercase;
+}
+.runhead .dot{color:var(--brass)}
+.runhead .grow{flex:1 1 40px}
+.runhead .brass{color:var(--brass)}
+
+.sheet{padding:0 var(--pad) 0}
+.folio{
+  font-family:var(--f-slab); font-size:13px; color:var(--ink-faint);
+  letter-spacing:.02em; padding:18px var(--pad) 34px;
+  display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
+  border-top:1px solid var(--hair); margin-top:34px;
+}
+.folio .catch{font-family:var(--f-body);font-style:italic;font-size:14px;color:var(--ink-soft);text-align:right}
+.folio .catch b{font-family:var(--f-data);font-style:normal;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:600}
+
+/* ruled ground */
+.ruled{
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--rule) - 1px),var(--feint) calc(var(--rule) - 1px),var(--feint) var(--rule));
+  background-position:0 0;
+}
+.marginrule{position:relative}
+.marginrule::before{
+  content:""; position:absolute; top:0; bottom:0; left:0;
+  border-left:1px solid var(--red); box-shadow:3px 0 0 -2px var(--red-lt);
+  opacity:.75;
+}
+
+/* ─────────────────────────── LABELS / SMALL PRINT ─────────────────────────── */
+.lab{
+  font-family:var(--f-data); font-size:10px; font-weight:600;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--ink-soft);
+}
+.lab.red{color:var(--red)}
+.lab.blue{color:var(--blue-dp)}
+.hand{font-family:var(--f-hand);font-size:20px;line-height:1.15;color:var(--blue-dp)}
+.pencil{font-family:var(--f-hand);font-size:19px;line-height:1.2;color:#6C6C60}
+
+/* ─────────────────────────── FRONTISPIECE ─────────────────────────── */
+.mast{position:relative;padding-top:26px}
+.mast .kicker{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.mast .kicker::after{content:"";flex:1}
+h1.wordmark{
+  font-family:var(--f-slab); font-weight:400;
+  font-size:clamp(3.1rem,12.4vw,10.4rem); line-height:.80;
+  letter-spacing:-.028em; margin:.24em 0 0; text-transform:uppercase;
+  color:var(--ink); text-shadow:0 0 .5px rgba(48,48,36,.35);
+}
+h1.wordmark span{display:block}
+h1.wordmark .l2{margin-left:.055em}
+h1.wordmark .l3{margin-left:-.02em;margin-right:-7vw;color:var(--sage-dp)}
+.mast .undertag{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 26px;
+  border-top:1px solid var(--ink);border-bottom:4px double var(--ink);
+  margin-top:16px;padding:9px 0 10px;
+}
+.mast .undertag em{
+  font-family:var(--f-body);font-style:italic;font-weight:500;
+  font-size:clamp(1.15rem,2.9vw,2rem);line-height:1.14;color:var(--sage-dp);
+}
+.wreath{
+  position:absolute; right:-2vw; top:-6px; width:clamp(150px,25vw,340px);
+  mix-blend-mode:multiply; opacity:.92; transform:rotate(-3deg);
+  pointer-events:none; z-index:2;
+}
+.wreath.fallback{display:none}
+
+/* particulars + story columns */
+.frontgrid{
+  display:grid; gap:0 0; margin-top:0;
+  grid-template-columns:1.35fr 1.35fr .95fr;
+  border-bottom:1px solid var(--hair);
+}
+.col{padding:18px 22px 26px;border-left:1px solid var(--red);position:relative}
+.col:first-child{border-left:0;padding-left:0}
+.col.ruled{background-position:0 6px}
+.col h2{margin:0 0 10px}
+.story p{margin:0 0 var(--rule);font-size:15.5px;line-height:var(--rule);color:#2C2C22}
+.story p:last-child{margin-bottom:0}
+.dropcap::first-letter{
+  font-family:var(--f-slab); font-size:60px; line-height:.72; float:left;
+  padding:6px 9px 0 0; color:var(--red);
+}
+table.particulars{width:100%;border-collapse:collapse;font-family:var(--f-data);font-size:12.5px}
+table.particulars th{
+  text-align:left;font-weight:400;color:var(--ink-soft);
+  letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;
+  padding:3px 0;vertical-align:bottom;
+}
+table.particulars td{
+  text-align:right;font-weight:700;color:var(--ink);padding:3px 0;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+table.particulars tr{border-bottom:1px dotted rgba(48,48,36,.42)}
+table.particulars tr:last-child td{color:var(--red)}
+table.particulars caption{
+  caption-side:top;text-align:left;font-family:var(--f-data);font-size:10px;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--red);
+  padding-bottom:6px;border-bottom:1px solid var(--ink);margin-bottom:6px;
+}
+
+/* stamp */
+.stamp{
+  display:inline-block; font-family:var(--f-data); font-weight:700;
+  text-transform:uppercase; text-align:center; color:var(--red);
+  border:2px solid var(--red); padding:6px 12px 5px; line-height:1.2;
+  box-shadow:inset 0 0 0 1px var(--red);
+  filter:url(#worn); opacity:.86;
+}
+.stamp .s1{display:block;font-size:9px;letter-spacing:.3em}
+.stamp .s2{display:block;font-size:17px;letter-spacing:.06em;margin:1px 0}
+.stamp .s3{display:block;font-size:8px;letter-spacing:.22em;color:var(--red-lt)}
+.stamp.blue{color:var(--blue-dp);border-color:var(--blue-dp);box-shadow:inset 0 0 0 1px var(--blue-dp)}
+.stamp.blue .s3{color:var(--blue)}
+.stampwrap{position:absolute;right:4%;bottom:14px;transform:rotate(-7.5deg);z-index:3}
+
+.blot{color:var(--ink);opacity:.9;pointer-events:none}
+.blot.sage{color:var(--sage-dp);opacity:.55}
+
+/* marginal note w/ arrow */
+.margnote{position:relative;display:flex;gap:8px;align-items:flex-start;max-width:26ch}
+.margnote svg{flex:0 0 auto;margin-top:4px}
+
+/* ─────────────────────────── THE REGISTER ─────────────────────────── */
+.leafhead{
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 26px;
+  border-bottom:4px double var(--ink);padding:22px 0 6px;
+}
+.leafhead h2{
+  font-family:var(--f-slab);font-weight:400;text-transform:uppercase;
+  font-size:clamp(2rem,6.4vw,4.6rem);line-height:.84;letter-spacing:-.02em;margin:0;
+}
+.leafhead .sub{font-family:var(--f-body);font-style:italic;font-size:clamp(1rem,1.6vw,1.22rem);color:var(--sage-dp);flex:1 1 220px}
+
+/* index with dot leaders */
+.index{
+  display:grid;grid-template-columns:1fr 1fr;gap:0 40px;
+  padding:14px 0 20px;border-bottom:1px solid var(--hair);
+}
+.index ol{list-style:none;margin:0;padding:0}
+.index li{display:flex;align-items:baseline;gap:6px;font-family:var(--f-data);font-size:12.5px;line-height:22px}
+.index a{text-decoration:none;display:flex;align-items:baseline;gap:6px;width:100%;color:var(--ink)}
+.index a:hover .nm{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.index .no{font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;min-width:2.1em}
+.index .leaders{flex:1;border-bottom:1px dotted rgba(48,48,36,.5);transform:translateY(-3px)}
+.index .pg{color:var(--ink-soft);letter-spacing:.1em;font-size:10.5px;text-transform:uppercase}
+
+/* column headings band */
+.colhead{
+  display:grid; gap:0; background:var(--ink); color:var(--paper-dp);
+  font-family:var(--f-data); font-size:9px; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase;
+  grid-template-columns:var(--cols); margin-top:22px;
+}
+.colhead span{padding:7px 10px;border-left:1px solid rgba(240,240,228,.28)}
+.colhead span:first-child{border-left:0}
+.register{--cols:62px 118px minmax(0,1fr) minmax(0,1.5fr) 172px 158px}
+.colhead{--cols:62px 118px minmax(0,1fr) minmax(0,1.5fr) 172px 158px}
+
+.register{list-style:none;margin:0;padding:0;border-bottom:4px double var(--ink)}
+.entry{
+  display:grid;grid-template-columns:var(--cols);
+  border-bottom:1px solid var(--hair);
+  position:relative;
+}
+.entry:nth-child(4n+3){background:rgba(96,144,192,.05)}
+.entry > *{padding:12px 10px;border-left:1px solid rgba(158,75,54,.55);min-width:0}
+.entry > *:first-child{border-left:0}
+
+.c-no{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:11px}
+.c-no .num{font-family:var(--f-slab);font-size:26px;line-height:.9;color:var(--ink);letter-spacing:-.02em}
+.c-no .keyglyph{color:var(--brass-dp);opacity:.95}
+.c-no .kept{font-family:var(--f-data);font-size:7.5px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;writing-mode:horizontal-tb;text-align:center}
+
+/* affixed photograph: mat + photo corners */
+.mat{
+  position:relative;background:var(--putty);
+  padding:6px;box-shadow:0 1px 0 rgba(48,48,36,.25),inset 0 0 0 1px rgba(48,48,36,.18);
+  aspect-ratio:1/1;overflow:hidden;
+}
+.mat .plate{position:absolute;inset:6px;background:var(--paper-lt);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(48,48,36,.35)}
+.mat img{width:100%;height:100%;filter:grayscale(.42) sepia(.26) contrast(.96) brightness(1.03)}
+.mat img.contain{object-fit:contain;background:var(--paper-lt);padding:3px}
+.mat img.cover{object-fit:cover}
+.mat .plate::after{content:"";position:absolute;inset:0;background:rgba(200,190,160,.20);mix-blend-mode:multiply;pointer-events:none}
+.mat .init{
+  position:absolute;inset:6px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-slab);font-size:22px;color:var(--putty-dp);letter-spacing:-.02em;
+  background:var(--paper-lt);
+}
+.pc{position:absolute;width:13px;height:13px;background:var(--putty-dp);opacity:.95;z-index:3}
+.pc.tl{top:0;left:0;clip-path:polygon(0 0,100% 0,0 100%)}
+.pc.tr{top:0;right:0;clip-path:polygon(100% 0,100% 100%,0 0)}
+.pc.bl{bottom:0;left:0;clip-path:polygon(0 0,0 100%,100% 100%)}
+.pc.br{bottom:0;right:0;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.c-mat{padding:12px 12px 14px}
+.c-mat .filed{font-family:var(--f-data);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-top:5px;text-align:center}
+
+.c-name h3{
+  margin:0;font-family:var(--f-body);font-weight:800;
+  font-size:clamp(1.02rem,1.42vw,1.32rem);line-height:1.12;letter-spacing:-.008em;
+  color:var(--ink);
+}
+.c-name .trade{
+  font-family:var(--f-data);font-size:10.5px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--sage-dp);margin-top:6px;line-height:1.5;
+  border-top:1px dotted rgba(48,48,36,.4);padding-top:6px;
+}
+.c-acct{font-size:13.6px;line-height:21px;color:#2E2E24;hyphens:auto}
+.c-served{font-family:var(--f-data)}
+.c-served .how{display:flex;gap:8px;align-items:flex-start}
+.c-served .how svg{flex:0 0 auto;margin-top:1px}
+.c-served .howlab{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;color:var(--ink)}
+.c-served .area{font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-top:7px;border-top:1px dotted rgba(48,48,36,.4);padding-top:6px;letter-spacing:.02em}
+.c-tel{font-family:var(--f-data)}
+.c-tel .tel{font-size:15px;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--ink);text-decoration:none;border-bottom:1px solid rgba(158,75,54,.6)}
+.c-tel .tel:hover{background:rgba(96,144,192,.18)}
+.c-tel .rem{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-top:4px}
+.c-tel .site{display:inline-block;margin-top:9px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-dp);text-decoration:none;border-bottom:1px dotted var(--blue)}
+.c-tel .site:hover{color:var(--ink);background:rgba(96,144,192,.18)}
+
+/* marginal pencil note inside an entry */
+.c-tel .note{margin-top:12px;border-top:1px solid rgba(48,48,36,.28);padding-top:8px}
+.c-tel .note .who{font-family:var(--f-data);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:2px}
+.c-tel .note p{margin:0;font-family:var(--f-hand);font-size:17.5px;line-height:1.18;color:#5F5F52;transform:rotate(-.7deg)}
+
+/* ─── the tipped-in slip ─── */
+.tipin{
+  display:block;padding:0;border-bottom:1px solid var(--hair);
+  background:
+    repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--rule) - 1px),var(--feint) calc(var(--rule) - 1px),var(--feint) var(--rule));
+}
+.tipin .inner{padding:30px var(--pad) 34px;display:flex;justify-content:center}
+.slipshadow{filter:drop-shadow(0 10px 12px rgba(48,48,36,.30)) drop-shadow(0 2px 2px rgba(48,48,36,.22));max-width:min(680px,100%)}
+.slip{
+  position:relative;background:var(--paper-lt);padding:26px 30px 24px 40px;
+  clip-path:polygon(
+    2% 0%,100% 0%,100% 100%,3% 100%,
+    1.2% 92%,2.6% 84%,0.6% 76%,2.2% 68%,0.4% 60%,2.4% 52%,
+    0.8% 44%,2.2% 36%,0.5% 28%,2.5% 20%,1% 12%,2.4% 6%
+  );
+}
+.slip.tiltA{transform:rotate(-1.3deg)}
+.slip.tiltB{transform:rotate(1.1deg)}
+.slip .sliphead{
+  display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;
+  border-bottom:1px solid var(--blue-dp);padding-bottom:6px;margin-bottom:14px;
+}
+.slip .sliphead .t{font-family:var(--f-data);font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--blue-dp)}
+.slip .sliphead .r{font-family:var(--f-data);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-left:auto}
+.slip blockquote{
+  margin:0;font-family:var(--f-type);font-size:clamp(15px,1.75vw,20px);line-height:1.58;
+  color:var(--blue-dp);letter-spacing:-.005em;
+}
+.slip blockquote::before{content:"“"}
+.slip blockquote::after{content:"”"}
+.slip figcaption{
+  margin-top:16px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 18px;
+  border-top:1px dotted rgba(67,112,158,.6);padding-top:8px;
+}
+.slip figcaption .sig{font-family:var(--f-hand);font-size:26px;color:var(--ink);line-height:1;transform:rotate(-2deg)}
+.slip figcaption .re{font-family:var(--f-data);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-left:auto;text-align:right}
+.slip .pin{position:absolute;left:16px;top:-9px;z-index:4}
+.slip .carbon{
+  position:absolute;right:14px;bottom:10px;font-family:var(--f-data);
+  font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:rgba(67,112,158,.6);
+}
+
+/* ─────────────────────────── COLOPHON LEAF ─────────────────────────── */
+.reserved{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;margin-top:8px}
+.reserved ol{list-style:none;margin:0;padding:0}
+.reserved li{
+  display:flex;align-items:baseline;gap:10px;
+  font-family:var(--f-data);font-size:12px;line-height:var(--rule);
+  border-bottom:1px solid var(--feint);
+}
+.reserved .no{color:var(--ink-faint);font-variant-numeric:tabular-nums;min-width:2.2em;font-weight:600}
+.reserved .ditto{color:rgba(48,48,36,.28);letter-spacing:.5em;flex:1}
+.threecol{display:grid;grid-template-columns:1.1fr 1.4fr .9fr;gap:0;border-top:1px solid var(--hair);margin-top:30px}
+.kept dl{margin:0;font-family:var(--f-data);font-size:12.5px}
+.kept dt{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-top:12px}
+.kept dd{margin:2px 0 0;font-weight:700;font-size:14px;letter-spacing:.02em}
+.kept dd a{text-decoration:none;border-bottom:1px solid rgba(158,75,54,.6)}
+.bigquote{
+  font-family:var(--f-body);font-style:italic;font-weight:500;
+  font-size:clamp(1.3rem,3.1vw,2.4rem);line-height:1.16;color:var(--sage-dp);margin:0;
+}
+.colo{font-family:var(--f-data);font-size:11px;line-height:1.65;color:var(--ink-soft);letter-spacing:.03em}
+.botanical{color:var(--sage);opacity:.9}
+
+/* ─────────────────────────── RESPONSIVE ─────────────────────────── */
+@media (max-width:1180px){
+  .register,.colhead{--cols:54px 100px minmax(0,1fr) minmax(0,1.35fr) 148px 140px}
+  .frontgrid{grid-template-columns:1fr 1fr}
+  .frontgrid .col.pt{grid-column:1/-1;border-left:0;border-top:1px solid var(--red);padding-left:0}
+}
+@media (max-width:900px){
+  .register,.colhead{--cols:48px 92px minmax(0,1.2fr) minmax(0,1.6fr)}
+  .colhead span.h5,.colhead span.h6{display:none}
+  .entry .c-served,.entry .c-tel{
+    grid-column:3/-1;border-left:0;border-top:1px dotted rgba(158,75,54,.7);
+    padding-top:9px;
+  }
+  .entry .c-served{grid-column:3/4}
+  .entry .c-tel{grid-column:4/-1;border-left:1px solid rgba(158,75,54,.55)}
+  .frontgrid{grid-template-columns:1fr}
+  .frontgrid .col{border-left:0;padding-left:0;border-top:1px solid var(--red);padding-top:16px}
+  .frontgrid .col:first-child{border-top:0}
+}
+@media (max-width:700px){
+  :root{--spine:14px;--thumb:0px;--rule:24px}
+  .spine b{font-size:8px;letter-spacing:.2em}
+  .volume{padding-bottom:64px}
+  .thumbs{
+    right:0;left:0;top:auto;bottom:0;width:auto;flex-direction:row;gap:4px;
+    padding:0 6px calc(4px + env(safe-area-inset-bottom)) 6px;
+    background:linear-gradient(to top,rgba(220,208,196,.96),rgba(220,208,196,.72));
+    border-top:1px dashed rgba(48,48,36,.5);
+  }
+  .thumbs .tabhead{display:none}
+  .tab{
+    writing-mode:horizontal-tb;flex:1 1 0;margin:0;padding:11px 4px 12px;
+    border-radius:6px 6px 0 0;font-size:10px;letter-spacing:.14em;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .tab:hover,.tab[aria-selected="true"]{margin:0}
+  .tab[aria-selected="true"]{transform:translateY(-3px)}
+  .index{grid-template-columns:1fr;gap:0}
+  .reserved{grid-template-columns:1fr}
+  .threecol{grid-template-columns:1fr}
+
+  /* the register becomes a stacked ledger stub — still ruled, never a card */
+  .colhead{display:none}
+  .entry{grid-template-columns:1fr 84px;border-bottom:3px solid var(--ink);padding-bottom:4px}
+  .entry > *{border-left:0!important;padding:9px 0}
+  .entry .c-no{
+    grid-column:1/2;grid-row:1;flex-direction:row;align-items:baseline;justify-content:flex-start;gap:8px;
+    border-bottom:1px solid var(--hair);
+  }
+  .entry .c-no .kept{writing-mode:horizontal-tb}
+  .entry .c-mat{grid-column:2/3;grid-row:1/3;padding:9px 0 9px 12px}
+  .entry .c-name{grid-column:1/2;grid-row:2;border-bottom:1px solid var(--hair);padding-bottom:10px}
+  .entry .c-acct{grid-column:1/-1;grid-row:3;border-bottom:1px dotted rgba(48,48,36,.45);font-size:14px;line-height:22px}
+  .entry .c-served{grid-column:1/-1;grid-row:4;border-top:0!important;border-bottom:1px dotted rgba(48,48,36,.45)}
+  .entry .c-tel{grid-column:1/-1;grid-row:5;border-top:0!important;display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline}
+  .entry .c-tel .note{flex:1 1 100%;margin-top:4px}
+  h1.wordmark .l3{margin-right:-4vw}
+  .wreath{position:static;width:132px;margin:14px 0 0 auto;transform:rotate(-3deg)}
+  .stampwrap{position:static;display:inline-block;margin:12px 0 0;transform:rotate(-4deg)}
+  .slip{padding:20px 18px 20px 28px}
+  .tipin .inner{padding:20px var(--pad) 24px}
+}
+@media (max-width:420px){
+  .entry{grid-template-columns:1fr 66px}
+  .c-name h3{font-size:1.05rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .leaf.turn{animation:none}
+}
+@media print{.thumbs,.grain,.vignette{display:none}.leaf{display:block!important}}
+</style>
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true" focusable="false">
+  <filter id="worn">
+    <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="3" seed="12" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="blotf">
+    <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="9" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="20" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <symbol id="key" viewBox="0 0 44 14">
+    <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <circle cx="7" cy="7" r="4.6"/><circle cx="7" cy="7" r="1.5"/>
+      <path d="M11.6 7H40"/><path d="M34 7v4.6"/><path d="M37.6 7v3.2"/><path d="M40 7v5.4"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="volume">
+
+  <div class="spine" aria-hidden="true"><b>The Village Collective · Vol. I · Hampton Roads</b></div>
+
+  <nav class="thumbs" aria-label="Leaves of this volume">
+    <span class="tabhead" aria-hidden="true">Fore-edge</span>
+    <div role="tablist" aria-label="Leaves" style="display:contents">
+      <button class="tab" role="tab" id="t1" aria-controls="leaf-1" aria-selected="true"><span class="n">I</span>&nbsp;&nbsp;Frontispiece</button>
+      <button class="tab" role="tab" id="t2" aria-controls="leaf-2" aria-selected="false"><span class="n">II</span>&nbsp;&nbsp;The Register</button>
+      <button class="tab" role="tab" id="t3" aria-controls="leaf-3" aria-selected="false"><span class="n">III</span>&nbsp;&nbsp;Open Wreath</button>
+    </div>
+  </nav>
+
+  <main class="book">
+
+  <!-- ════════════════════ LEAF I ════════════════════ -->
+  <section class="leaf" id="leaf-1" role="tabpanel" aria-labelledby="t1" tabindex="-1">
+    <div class="runhead">
+      <span class="brass">Vol.&nbsp;I</span><span class="dot">✦</span>
+      <span>A Register of Trades, Kept by Hand</span>
+      <span class="grow"></span>
+      <span>Hampton Roads Co., Virginia</span><span class="dot">✦</span>
+      <span class="brass">Folio&nbsp;i</span>
+    </div>
+
+    <div class="sheet">
+      <header class="mast">
+        <img class="wreath" src="/tvc-mark-keyed.png" alt="" onerror="this.remove()">
+        <div class="kicker">
+          <span class="lab red">Entered by hand</span>
+          <span class="lab">Kept by Jessica, Bless This Mess Cleaning</span>
+          <span class="lab blue">Thirty-nine entries</span>
+        </div>
+
+        <h1 class="wordmark">
+          <span class="l1">The</span>
+          <span class="l2">Village</span>
+          <span class="l3">Collective</span>
+        </h1>
+
+        <p class="undertag">
+          <span class="lab red" style="flex:0 0 auto">Motto&nbsp;·&nbsp;struck on every leaf</span>
+          <em>Every season of life deserves a village.</em>
+        </p>
+      </header>
+
+      <div class="frontgrid">
+        <div class="col story ruled" style="padding-top:20px">
+          <h2 class="lab red" style="border-bottom:1px solid var(--ink);padding-bottom:5px">How the volume came to be kept</h2>
+          <p class="dropcap">Her cleaning clients kept asking who do you trust. She had answers, because she was already inside their homes. Those referrals became a village.</p>
+          <p>What was once a name scribbled on the back of an invoice is now ruled, numbered and bound. Nothing in these pages was bought. Nothing in these pages is ranked. An entry is made when a woman with a mop and a good memory can say, out loud, that she would send her own mother.</p>
+          <div class="margnote" style="margin-top:6px">
+            <svg width="34" height="26" viewBox="0 0 34 26" fill="none" aria-hidden="true">
+              <path d="M1 24C6 12 16 4 32 3" stroke="#6C6C60" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M26 1.5 32.6 3 28.5 8" stroke="#6C6C60" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="pencil">the wreath is open on purpose — there is still room in it</span>
+          </div>
+        </div>
+
+        <div class="col story ruled" style="padding-top:20px">
+          <h2 class="lab blue" style="border-bottom:1px solid var(--ink);padding-bottom:5px">How to read a ledger page</h2>
+          <p>Every entry carries the same brass key, struck at the same size, in the same ink. There is no star, no tier, no favourite. The only column that separates one trade from another is <strong>HOW SERVED</strong> — one comes to your house, one keeps a storefront, one keeps a studio, one meets you in an office. That is a difference of shape, never of worth.</p>
+          <p>Read across the rule, not down it. The account of the business is set in her own words, spelling and all, because a register that tidies people up is no longer a record of them.</p>
+        </div>
+
+        <div class="col pt ruled" style="padding-top:20px">
+          <table class="particulars">
+            <caption>Particulars of this volume</caption>
+            <tbody>
+              <tr><th scope="row">County</th><td>Hampton Roads, VA</td></tr>
+              <tr><th scope="row">Entries in full volume</th><td>39</td></tr>
+              <tr><th scope="row">Shewn on this leaf</th><td>08</td></tr>
+              <tr><th scope="row">Kept by</th><td>Jessica</td></tr>
+              <tr><th scope="row">Trades bought or sponsored</th><td>None</td></tr>
+              <tr><th scope="row">Ranked, rated or sorted by merit</th><td>None</td></tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:20px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <span class="stamp"><span class="s1">Register of</span><span class="s2">TRADES</span><span class="s3">Kept by hand · Vol. I</span></span>
+            <svg class="blot sage" width="86" height="70" viewBox="0 0 200 160" aria-hidden="true">
+              <g filter="url(#blotf)" fill="currentColor">
+                <ellipse cx="96" cy="80" rx="44" ry="34"/><circle cx="152" cy="44" r="7"/>
+                <circle cx="44" cy="124" r="5"/><circle cx="166" cy="112" r="4"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:18px 34px;align-items:center;padding:20px 0 0">
+        <svg class="botanical" width="128" height="30" viewBox="0 0 128 30" fill="none" aria-hidden="true">
+          <path d="M2 15h124" stroke="currentColor" stroke-width=".9"/>
+          <g stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
+            <path d="M18 15c0-6 4-9 8-9M18 15c0 6 4 9 8 9M40 15c0-6 4-9 8-9M40 15c0 6 4 9 8 9M62 15c0-6 4-9 8-9M62 15c0 6 4 9 8 9M84 15c0-6 4-9 8-9M84 15c0 6 4 9 8 9M106 15c0-6 4-9 8-9M106 15c0 6 4 9 8 9"/>
+          </g>
+        </svg>
+        <p class="lab" style="margin:0;flex:1 1 240px;line-height:1.7">Turn to <strong style="color:var(--red)">Leaf II</strong> for the register itself &nbsp;·&nbsp; use the cut tabs at the fore-edge</p>
+      </div>
+    </div>
+
+    <div class="folio">
+      <span>i</span>
+      <span class="catch">catchword — <b>The Register</b></span>
+    </div>
+  </section>
+
+  <!-- ════════════════════ LEAF II ════════════════════ -->
+  <section class="leaf" id="leaf-2" role="tabpanel" aria-labelledby="t2" tabindex="-1" hidden>
+    <div class="runhead">
+      <span class="brass">Vol.&nbsp;I</span><span class="dot">✦</span>
+      <span>The Register — Entries 01–08 of 39</span>
+      <span class="grow"></span>
+      <span>Nothing here is ranked</span><span class="dot">✦</span>
+      <span class="brass">Folio&nbsp;ii</span>
+    </div>
+
+    <div class="sheet">
+      <div class="leafhead">
+        <h2>The Register</h2>
+        <p class="sub">Eight of thirty-nine, entered in the order she came to trust them.</p>
+      </div>
+
+      <div class="index" aria-label="Index of entries on this leaf">
+        <ol>
+          <li><a href="#e01"><span class="no">01</span><span class="nm">Bless This Mess Cleaning</span><span class="leaders"></span><span class="pg">comes to the house</span></a></li>
+          <li><a href="#e02"><span class="no">02</span><span class="nm">Amir Electric, Inc.</span><span class="leaders"></span><span class="pg">comes to the house</span></a></li>
+          <li><a href="#e03"><span class="no">03</span><span class="nm">Babcock, Moore &amp; Lambert, PLC</span><span class="leaders"></span><span class="pg">keeps an office</span></a></li>
+          <li><a href="#e04"><span class="no">04</span><span class="nm">The Branches Of Birth, LLC</span><span class="leaders"></span><span class="pg">comes to you</span></a></li>
+        </ol>
+        <ol>
+          <li><a href="#e05"><span class="no">05</span><span class="nm">My Vegan Sweet Tooth</span><span class="leaders"></span><span class="pg">has a storefront</span></a></li>
+          <li><a href="#e06"><span class="no">06</span><span class="nm">The DogFather&rsquo;s Dog Walking, LLC</span><span class="leaders"></span><span class="pg">comes to you</span></a></li>
+          <li><a href="#e07"><span class="no">07</span><span class="nm">Rey Tanning</span><span class="leaders"></span><span class="pg">keeps a studio</span></a></li>
+          <li><a href="#e08"><span class="no">08</span><span class="nm">Key Glass Repair, LLC</span><span class="leaders"></span><span class="pg">comes to you</span></a></li>
+        </ol>
+      </div>
+
+      <div class="colhead" aria-hidden="true">
+        <span>No.</span><span>Affixed</span><span>Entry &amp; Trade</span>
+        <span>Account of the business, in her words</span>
+        <span class="h5">How served</span><span class="h6">Telephone &amp; remarks</span>
+      </div>
+
+      <ol class="register">
+
+        <!-- 01 ─────────────────────────── -->
+        <li class="entry" id="e01">
+          <div class="c-no"><span class="num">01</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">BTM</span>
+              <span class="plate"><img class="contain" src="/members/bless-this-mess-cleaning.jpg" alt="Bless This Mess Cleaning" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 01</p>
+          </div>
+          <div class="c-name">
+            <h3>Bless This Mess Cleaning</h3>
+            <p class="trade">Professional Residential Cleaning</p>
+          </div>
+          <div class="c-acct">Life gets messy, that’s where we come in. At Bless This Mess Cleaning, we believe a clean home creates room to breathe, reconnect, and enjoy what matters most. Whether you need routine maintenance, a deep clean, or help preparing for a move, we treat every home with the same care we’d give our own. No judgment, no shortcuts, just dependable service from people who genuinely love helping others.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2.5 10.5 12 2.5l9.5 8" stroke="#303024" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9.5h14V10" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 19.5V14h4v5.5" stroke="#9E4B36" stroke-width="1.3"/></svg>
+              <span class="howlab">Comes to the house</span>
+            </div>
+            <p class="area">Hampton Roads</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7572375247">757-237-5247</a>
+            <p class="rem">The house this book was kept in</p>
+          </div>
+        </li>
+
+        <!-- 02 ─────────────────────────── -->
+        <li class="entry" id="e02">
+          <div class="c-no"><span class="num">02</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">AE</span>
+              <span class="plate"><img class="cover" src="/members/amir-electric-inc.png" alt="Amir Electric, Inc." loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 02</p>
+          </div>
+          <div class="c-name">
+            <h3>Amir Electric, Inc.</h3>
+            <p class="trade">Residential &amp; Commercial Electrical Services</p>
+          </div>
+          <div class="c-acct">Amir Electric, Inc. was founded by Amir Ahangari, a longtime Hampton Roads electrician whose reputation has been built on decades of honesty, craftsmanship, and exceptional problem-solving. Known for his extensive knowledge of the trade, Amir has earned the trust of generations of local families, often serving parents and later their children as they purchase homes of their own. Beyond his work, Amir has spent years mentoring apprentices, supporting fellow tradesmen as they launched their own businesses, and generously sharing his knowledge with others. His commitment to doing things the right way has left a lasting impact not only on the homes he’s wired, but on the people he’s helped along the way, making Amir Electric a trusted name in Hampton Roads for generations.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2.5 10.5 12 2.5l9.5 8" stroke="#303024" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9.5h14V10" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 19.5V14h4v5.5" stroke="#9E4B36" stroke-width="1.3"/></svg>
+              <span class="howlab">Comes to the house</span>
+            </div>
+            <p class="area">Hampton Roads</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7572882580">757-288-2580</a>
+            <p class="rem">See slip tipped in below</p>
+          </div>
+        </li>
+
+        <!-- tipped-in slip, entry 02 -->
+        <li class="tipin">
+          <div class="inner">
+            <div class="slipshadow">
+              <figure class="slip tiltA">
+                <svg class="pin" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                  <circle cx="10" cy="6.4" r="4.6" fill="#9E4B36"/><circle cx="8.4" cy="5" r="1.5" fill="#D9A090"/>
+                  <path d="M10 10.6 10.6 19" stroke="#55554A" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div class="sliphead">
+                  <span class="t">Slip tipped in at entry 02</span>
+                  <span class="r">Carbon copy · retained</span>
+                </div>
+                <blockquote>I can personally vouche for him, he's my Dad! I wouldn't be who I am today in life and in business if it wasn't for him.</blockquote>
+                <figcaption>
+                  <span class="sig">Jessica</span>
+                  <span class="re">Re: Amir Electric, Inc.<br>Entered in her own hand</span>
+                </figcaption>
+                <span class="carbon">do not remove from volume</span>
+              </figure>
+            </div>
+          </div>
+        </li>
+
+        <!-- 03 ─────────────────────────── -->
+        <li class="entry" id="e03">
+          <div class="c-no"><span class="num">03</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">BML</span>
+              <span class="plate"><img class="contain" src="/members/babcock-moore-lambert-plc.png" alt="Babcock, Moore &amp; Lambert, PLC" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 03</p>
+          </div>
+          <div class="c-name">
+            <h3>Babcock, Moore &amp; Lambert, PLC</h3>
+            <p class="trade">Civil Litigation - Personal Injury - Estate Planning - Insurance Defense - Employment Law</p>
+          </div>
+          <div class="c-acct">Babcock Moore &amp; Lambert, PLC is a women-led law firm serving Hampton Roads and Southeastern Virginia with a commitment to practical legal solutions, compassionate client service, and experienced advocacy. Founded on the belief that clients deserve attorneys they can trust and communicate with, the firm provides representation in personal injury, civil litigation, estate planning, insurance matters, employment law, and corporate law. With decades of combined litigation experience and a reputation for professionalism and integrity, the attorneys at Babcock Moore &amp; Lambert are dedicated to helping individuals, families, and businesses navigate complex legal matters with confidence.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 8 12 3l10 5" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M4 8v11h16V8" stroke="#303024" stroke-width="1.4"/><path d="M8 19V11M12 19V11M16 19V11" stroke="#9E4B36" stroke-width="1.2"/><path d="M2.5 19.5h19" stroke="#303024" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <span class="howlab">Keeps an office</span>
+            </div>
+            <p class="area">Hampton Roads &amp; Southeastern Virginia</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7579955606">757-995-5606</a>
+            <a class="site" href="https://www.babcockmoore.com/" rel="noopener">babcockmoore.com</a>
+            <div class="note">
+              <span class="who">Pencilled in the margin</span>
+              <p>Personally, Tina Babcock is my former boss, my attorney and always my first call when life happens. Period.</p>
+            </div>
+          </div>
+        </li>
+
+        <!-- 04 ─────────────────────────── -->
+        <li class="entry" id="e04">
+          <div class="c-no"><span class="num">04</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">BoB</span>
+              <span class="plate"><img class="cover" src="/members/the-branches-of-birth-llc.png" alt="The Branches Of Birth, LLC" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 04</p>
+          </div>
+          <div class="c-name">
+            <h3>The Branches Of Birth, LLC</h3>
+            <p class="trade">Birth &amp; Postpartum Doula</p>
+          </div>
+          <div class="c-acct">The Branches of Birth LLC was founded by Asyia Jackson, a Hampton Roads birth professional whose own motherhood journey inspired a passion for supporting families through pregnancy, birth, and the postpartum season. As a Virginia state-certified full-spectrum doula with a background in psychology, Asyia provides compassionate, evidence-based care while empowering parents through education, advocacy, and personalized support. Her mission is simple: to ensure every family feels seen, heard, and confidently supported as they welcome new life.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><circle cx="7" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><circle cx="18" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><path d="M10 16h5M4 16H2.5V8h11l3.5 4.5V16" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M2.5 4.5h7" stroke="#9E4B36" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span class="howlab">Comes to you</span>
+            </div>
+            <p class="area">Hampton Roads — comes to you</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7575040716">757-504-0716</a>
+            <a class="site" href="https://portal.dubsado.com/public/form/view/655a46fa169418003ab85871" rel="noopener">Enquiry form</a>
+            <p class="rem">See slip tipped in below</p>
+          </div>
+        </li>
+
+        <!-- tipped-in slip, entry 04 -->
+        <li class="tipin">
+          <div class="inner">
+            <div class="slipshadow">
+              <figure class="slip tiltB">
+                <svg class="pin" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                  <circle cx="10" cy="6.4" r="4.6" fill="#43709E"/><circle cx="8.4" cy="5" r="1.5" fill="#9EC0E0"/>
+                  <path d="M10 10.6 10.6 19" stroke="#55554A" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div class="sliphead">
+                  <span class="t">Slip tipped in at entry 04</span>
+                  <span class="r">Carbon copy · retained</span>
+                </div>
+                <blockquote>Asyia came to Bless This Mess a little over a year ago. She smacked Kate and I so hard with kindness, love and gratitude and ALL the pregnant mommies we officially named a whole cleaning package after her! The Asyia Nest!</blockquote>
+                <figcaption>
+                  <span class="sig">Jessica</span>
+                  <span class="re">Re: The Branches Of Birth, LLC<br>Entered in her own hand</span>
+                </figcaption>
+                <span class="carbon">do not remove from volume</span>
+              </figure>
+            </div>
+          </div>
+        </li>
+
+        <!-- 05 ─────────────────────────── -->
+        <li class="entry" id="e05">
+          <div class="c-no"><span class="num">05</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">MVST</span>
+              <span class="plate"><img class="contain" src="/members/my-vegan-sweet-tooth.png" alt="My Vegan Sweet Tooth" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 05</p>
+          </div>
+          <div class="c-name">
+            <h3>My Vegan Sweet Tooth</h3>
+            <p class="trade">Virginia's 1st 100% Vegan Bakery</p>
+          </div>
+          <div class="c-acct">My Vegan Sweet Tooth is Virginia’s first 100% vegan bakery, located on Virginia Beach Boulevard and known for its made-in-house desserts, custom cakes, donuts, cupcakes, cinnamon rolls, cookies, brownies, muffins, and allergy-friendly options like gluten-free, nut-free, and soy-free treats. Founded by the Deveau family, the bakery opened in 2010 with a mission rooted in compassion for animals while still creating desserts that everyone can enjoy. Beyond the storefront, the family has supported local animal charities including the Virginia Beach SPCA, donated customer tips to animal-focused causes, and fostered kittens through the years — a beautiful reflection of the heart behind the business.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2.5 8h19v3.2c-1.6 0-1.6-1.6-3.2-1.6S16.7 11.2 15.1 11.2 13.5 9.6 11.9 9.6 10.3 11.2 8.7 11.2 7.1 9.6 5.5 9.6 3.9 11.2 2.5 11.2V8Z" stroke="#9E4B36" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 8V5h16v3" stroke="#303024" stroke-width="1.4"/><path d="M5 11.5v8h14v-8" stroke="#303024" stroke-width="1.4"/><path d="M9.5 19.5V14h5v5.5" stroke="#303024" stroke-width="1.2"/></svg>
+              <span class="howlab">Has a storefront</span>
+            </div>
+            <p class="area">Virginia Beach Boulevard</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7572794789">757-279-4789</a>
+            <a class="site" href="https://linktr.ee/MyVeganSweetTooth" rel="noopener">All links</a>
+            <div class="note">
+              <span class="who">Pencilled in the margin</span>
+              <p>As someone who has personally cleaned for them, I can say this is one of those local businesses where the values go far beyond the baked goods.</p>
+            </div>
+          </div>
+        </li>
+
+        <!-- 06 ─────────────────────────── -->
+        <li class="entry" id="e06">
+          <div class="c-no"><span class="num">06</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">DF</span>
+              <span class="plate"><img class="contain" src="/members/the-dogfather-s-dog-walking-llc.png" alt="The DogFather&rsquo;s Dog Walking, LLC" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 06</p>
+          </div>
+          <div class="c-name">
+            <h3>The DogFather’s Dog Walking, LLC</h3>
+            <p class="trade">Professional Local Dog Walker / Care Taker</p>
+          </div>
+          <div class="c-acct">Founded by Joshua Parker, The Dog Father’s Dog Walking LLC provides dependable and personalized pet care services for busy pet owners throughout Hampton Roads. Built on a genuine love for animals, the business focuses on giving dogs the exercise, attention, and companionship they need while providing peace of mind for their families. Whether it’s daily walks, pet visits, or individualized care, The Dog Father’s Dog Walking LLC is dedicated to treating every pet like family.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><circle cx="7" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><circle cx="18" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><path d="M10 16h5M4 16H2.5V8h11l3.5 4.5V16" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M2.5 4.5h7" stroke="#9E4B36" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span class="howlab">Comes to you</span>
+            </div>
+            <p class="area">Hampton Roads — comes to your home</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7575814714">757-581-4714</a>
+            <div class="note">
+              <span class="who">Pencilled in the margin</span>
+              <p>I've had 1st hand experience with Josh, and 10/10 I do recommend!</p>
+            </div>
+          </div>
+        </li>
+
+        <!-- 07 ─────────────────────────── -->
+        <li class="entry" id="e07">
+          <div class="c-no"><span class="num">07</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">REY</span>
+              <span class="plate"><img class="cover" src="/members/rey-tanning.png" alt="Rey Tanning" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 07</p>
+          </div>
+          <div class="c-name">
+            <h3>Rey Tanning</h3>
+            <p class="trade">Awarded Best of Virginia Beach - Custom Spray Tans</p>
+          </div>
+          <div class="c-acct">Founded by Riley and built as a women-owned business, Rey Collective is a luxury sunless tanning and beauty studio serving Hampton Roads with locations in Hilltop and the Virginia Beach/Chesapeake area. Specializing in custom spray tans, bridal tanning experiences, and teeth whitening services, Rey Collective focuses on helping clients feel confident while prioritizing skin health and avoiding UV damage. Known for its personalized approach, attention to detail, and elevated client experience, Rey Collective has become a go-to destination for a natural, year-round glow.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M4 19.5V4.5h16v15" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M2.5 19.5h19" stroke="#303024" stroke-width="1.4" stroke-linecap="round"/><path d="M9 19.5V9h6v10.5" stroke="#9E4B36" stroke-width="1.3"/><circle cx="13.4" cy="14" r=".9" fill="#303024"/></svg>
+              <span class="howlab">Keeps a studio</span>
+            </div>
+            <p class="area">1616 Hilltop West Shopping Center, Virginia Beach</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7579572492">757-957-2492</a>
+            <a class="site" href="https://reycollective.com/" rel="noopener">reycollective.com</a>
+            <p class="rem">You go to her</p>
+          </div>
+        </li>
+
+        <!-- 08 ─────────────────────────── -->
+        <li class="entry" id="e08">
+          <div class="c-no"><span class="num">08</span><svg class="keyglyph" width="30" height="10" aria-hidden="true"><use href="#key"/></svg><span class="kept">kept</span></div>
+          <div class="c-mat">
+            <figure class="mat" style="margin:0">
+              <span class="init" aria-hidden="true">KG</span>
+              <span class="plate"><img class="cover" src="/members/key-glass-repair-llc.png" alt="Key Glass Repair, LLC" loading="lazy" onerror="this.remove()"></span>
+              <i class="pc tl"></i><i class="pc tr"></i><i class="pc bl"></i><i class="pc br"></i>
+            </figure>
+            <p class="filed">affixed 08</p>
+          </div>
+          <div class="c-name">
+            <h3>Key Glass Repair, LLC</h3>
+            <p class="trade">Mobile Auto Glass Repair</p>
+          </div>
+          <div class="c-acct">Founded by Keyonna, Key Glass Repair LLC is a Black-owned, woman-owned auto glass company proudly serving Hampton Roads from its Virginia Beach location. Specializing in windshield replacement, auto glass repair, and calibration services, the company is known for its commitment to quality workmanship, exceptional customer service, and strong community engagement. Through both its business and social media presence, Key Glass Repair actively supports local initiatives, small businesses, and community connections while helping drivers get back on the road safely and confidently.</div>
+          <div class="c-served">
+            <div class="how">
+              <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><circle cx="7" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><circle cx="18" cy="16" r="3" stroke="#303024" stroke-width="1.4"/><path d="M10 16h5M4 16H2.5V8h11l3.5 4.5V16" stroke="#303024" stroke-width="1.4" stroke-linejoin="round"/><path d="M2.5 4.5h7" stroke="#9E4B36" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span class="howlab">Comes to you</span>
+            </div>
+            <p class="area">Virginia Beach &amp; Hampton Roads — mobile</p>
+          </div>
+          <div class="c-tel">
+            <a class="tel" href="tel:7572986708">757-298-6708</a>
+            <a class="site" href="https://key-glass-repair-llc.square.site/" rel="noopener">Book online</a>
+            <p class="rem">She brings the glass</p>
+          </div>
+        </li>
+      </ol>
+
+      <div style="display:flex;flex-wrap:wrap;gap:18px 30px;align-items:flex-end;padding:20px 0 0">
+        <p class="pencil" style="margin:0;flex:1 1 240px;transform:rotate(-.6deg)">thirty-one further entries kept in the full volume — see Leaf III</p>
+        <span class="stamp blue"><span class="s1">Entered</span><span class="s2">BY HAND</span><span class="s3">Not bought · not ranked</span></span>
+      </div>
+    </div>
+
+    <div class="folio">
+      <span>ii</span>
+      <span class="catch">catchword — <b>The Open Wreath</b></span>
+    </div>
+  </section>
+
+  <!-- ════════════════════ LEAF III ════════════════════ -->
+  <section class="leaf" id="leaf-3" role="tabpanel" aria-labelledby="t3" tabindex="-1" hidden>
+    <div class="runhead">
+      <span class="brass">Vol.&nbsp;I</span><span class="dot">✦</span>
+      <span>The Open Wreath — Reserved Entries &amp; Colophon</span>
+      <span class="grow"></span>
+      <span>Every season of life deserves a village</span><span class="dot">✦</span>
+      <span class="brass">Folio&nbsp;iii</span>
+    </div>
+
+    <div class="sheet">
+      <div class="leafhead">
+        <h2>The Open Wreath</h2>
+        <p class="sub">The circle does not close. That is not a slip of the drawing hand.</p>
+      </div>
+
+      <div class="threecol" style="margin-top:0">
+        <div class="col story ruled" style="padding-top:18px;border-left:0;padding-left:0">
+          <p class="bigquote">There is room in the wreath for the next name, and the next season.</p>
+          <div style="margin-top:22px"><svg class="blot" width="112" height="90" viewBox="0 0 200 160" aria-hidden="true"><g filter="url(#blotf)" fill="currentColor" opacity=".82"><ellipse cx="92" cy="76" rx="40" ry="31"/><circle cx="148" cy="42" r="6"/><circle cx="40" cy="120" r="4.5"/></g></svg></div>
+        </div>
+        <div class="col story ruled" style="padding-top:18px">
+          <h2 class="lab red" style="border-bottom:1px solid var(--ink);padding-bottom:5px">Reserved lines</h2>
+          <p>Thirty-nine trades are entered in the full volume. The lines below are ruled and waiting: a register that is finished is only a monument. This one is still being kept.</p>
+          <p>Entries are made the same way they have always been made — by someone who was already in the house, who watched the work get done, and who would put her own name beside it.</p>
+        </div>
+        <div class="col kept ruled" style="padding-top:18px">
+          <h2 class="lab blue" style="border-bottom:1px solid var(--ink);padding-bottom:5px">Kept by</h2>
+          <dl>
+            <dt>Proprietor of the volume</dt><dd>Jessica</dd>
+            <dt>Trade</dt><dd>Bless This Mess Cleaning</dd>
+            <dt>Telephone</dt><dd><a href="tel:7572375247">757-237-5247</a></dd>
+            <dt>County</dt><dd>Hampton Roads, Virginia</dd>
+          </dl>
+          <div style="margin-top:20px">
+            <svg class="botanical" width="118" height="72" viewBox="0 0 118 72" fill="none" aria-hidden="true">
+              <g stroke="currentColor" stroke-width="1.1" fill="none" stroke-linecap="round">
+                <path d="M20 70C20 48 26 34 40 24M40 24c-8-2-14 2-16 8M40 24c-1-8 3-13 9-15"/>
+                <path d="M74 70c2-20 8-30 20-38"/>
+              </g>
+              <g>
+                <g transform="translate(40,18)">
+                  <circle cx="0" cy="-7" r="4.2" fill="#6090C0"/><circle cx="6.7" cy="-2.2" r="4.2" fill="#6090C0"/>
+                  <circle cx="4.1" cy="5.7" r="4.2" fill="#6090C0"/><circle cx="-4.1" cy="5.7" r="4.2" fill="#6090C0"/>
+                  <circle cx="-6.7" cy="-2.2" r="4.2" fill="#6090C0"/><circle cx="0" cy="0" r="1.9" fill="#A89060"/>
+                </g>
+                <g transform="translate(94,30) scale(.78)">
+                  <circle cx="0" cy="-7" r="4.2" fill="#43709E"/><circle cx="6.7" cy="-2.2" r="4.2" fill="#43709E"/>
+                  <circle cx="4.1" cy="5.7" r="4.2" fill="#43709E"/><circle cx="-4.1" cy="5.7" r="4.2" fill="#43709E"/>
+                  <circle cx="-6.7" cy="-2.2" r="4.2" fill="#43709E"/><circle cx="0" cy="0" r="1.9" fill="#A89060"/>
+                </g>
+              </g>
+            </svg>
+            <p class="lab" style="margin:4px 0 0">Forget-me-not · the flower of remembrance</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="lab red" style="border-bottom:2px solid var(--ink);padding-bottom:6px;margin:34px 0 0">Lines ruled &amp; reserved — entries 09 to 39</h3>
+      <div class="reserved">
+        <ol id="res-a"></ol>
+        <ol id="res-b"></ol>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:22px 40px;align-items:flex-end;border-top:1px solid var(--hair);margin-top:30px;padding-top:20px">
+        <p class="colo" style="margin:0;flex:1 1 300px;max-width:56ch">
+          COLOPHON — Vol. I of The Village Collective, a register of trades kept by hand in Hampton Roads, Virginia.
+          Ruled in oxide red and carbon blue on warm paper. Display struck in Ultra; the accounts set in Petrona;
+          the columns lettered in Archivo Narrow; slips typed on a machine that needed a new ribbon.
+          Mark: an open olive laurel, a brass skeleton key, forget-me-nots at the base.
+          No entry is ranked, rated, sponsored or sorted by merit — only by how it serves you.
+        </p>
+        <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+          <img src="/tvc-mark-keyed.png" alt="The Village Collective mark: an open olive wreath around a TVC monogram, crossed by a brass skeleton key, with forget-me-nots at the base" style="width:130px;mix-blend-mode:multiply;opacity:.9;transform:rotate(2deg)" onerror="this.remove()">
+          <span class="stamp"><span class="s1">Hampton Roads</span><span class="s2">CO. VA.</span><span class="s3">Vol. I · kept open</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="folio">
+      <span>iii</span>
+      <span class="catch">end of leaf — <b>return to Frontispiece</b></span>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<script>
+(function(){
+  /* reserved ruled lines 09–39 */
+  var a=document.getElementById('res-a'), b=document.getElementById('res-b');
+  for(var n=9;n<=39;n++){
+    var li=document.createElement('li');
+    li.innerHTML='<span class="no">'+(n<10?'0'+n:n)+'</span><span class="ditto">— — — — — — — — — — — — — — — —</span>';
+    (n<=24?a:b).appendChild(li);
+  }
+
+  /* leaves of the volume, turned by the fore-edge thumb tabs */
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  var leaves=tabs.map(function(t){return document.getElementById(t.getAttribute('aria-controls'));});
+  function turn(i,focus){
+    tabs.forEach(function(t,j){
+      t.setAttribute('aria-selected', j===i?'true':'false');
+      leaves[j].hidden = j!==i;
+      leaves[j].classList.remove('turn');
+    });
+    void leaves[i].offsetWidth;
+    leaves[i].classList.add('turn');
+    window.scrollTo({top:0,behavior:'auto'});
+    if(focus){tabs[i].focus();}
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){turn(i,false);});
+    t.addEventListener('keydown',function(e){
+      if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();turn((i+1)%tabs.length,true);}
+      if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();turn((i+tabs.length-1)%tabs.length,true);}
+    });
+  });
+
+  /* index links inside a leaf must not open a hidden leaf */
+  document.querySelectorAll('.index a, a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(){
+      var id=a.getAttribute('href');
+      if(!id||id.length<2) return;
+      var el=document.querySelector(id);
+      if(!el) return;
+      var leaf=el.closest('.leaf');
+      var i=leaves.indexOf(leaf);
+      if(i>-1 && leaf.hidden) turn(i,false);
+    });
+  });
+
+  /* mark the row you last looked at, the way a finger holds a line */
+  document.querySelectorAll('.entry').forEach(function(row){
+    row.addEventListener('pointerenter',function(){row.style.boxShadow='inset 3px 0 0 var(--brass)';});
+    row.addEventListener('pointerleave',function(){row.style.boxShadow='';});
+  });
+})();
+</script>
+</body>
+</html>

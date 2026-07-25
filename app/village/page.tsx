@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MEMBERS, CATEGORIES } from "@/data/members";
-import { VillageGrid } from "@/components/village-grid";
+import { VillageIndex } from "@/components/village-index";
+import { Sprig } from "@/components/floral";
 
 export const metadata: Metadata = {
   title: "The Village",
@@ -17,18 +18,16 @@ export default async function VillagePage({
   const valid = CATEGORIES.some((x) => x.slug === c) ? c : undefined;
 
   return (
-    <section className="px-6 pt-36 pb-8 sm:px-10 sm:pt-44">
+    <section className="px-6 pt-32 pb-8 sm:px-10 sm:pt-40">
       <div className="mx-auto max-w-[1180px]">
-        <header className="max-w-[34ch]">
-          <h1 className="t-display t-section">The Village</h1>
-          <p className="mt-6 text-[15.5px] leading-[1.7] text-ink-soft">
-            {MEMBERS.length} people Jessica trusts, across Hampton Roads. Find yours by what you
-            need or where you are.
-          </p>
-        </header>
-
+        <Sprig className="h-6 w-[200px]" />
+        <h1 className="display mt-10 text-[clamp(2.2rem,5vw,4rem)]">The Village</h1>
+        <p className="prose-warm mt-5 max-w-[46ch]">
+          {MEMBERS.length} people Jessica trusts, across Hampton Roads. Find yours by what you
+          need or where you are.
+        </p>
         <div className="mt-14">
-          <VillageGrid members={MEMBERS} initialCategory={valid} />
+          <VillageIndex members={MEMBERS} initialCategory={valid} />
         </div>
       </div>
     </section>

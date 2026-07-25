@@ -1,55 +1,32 @@
 @import "tailwindcss";
 
-/*
-  The Village Collective — design tokens.
-  Palette sampled directly from the client's monogram (July 2026), not invented:
-  paper #F0F0E4, ink #303024, sage #848460/#545430, brass #A89060/#847854,
-  forget-me-not blue #6090C0.
-
-  ACCENT LOCK: blue is the ONLY interactive accent on the entire site.
-  Sage and brass are brand ornament — hairlines, rules, the mark. They never
-  become buttons or links. One accent, whole page.
-*/
+/* The Village Collective — palette sampled from Jessica's own monogram. */
 @theme {
-  --color-paper: #f0f0e4;
-  --color-paper-raised: #f6f6ec;
-  --color-paper-deep: #e7e7d8;
-  --color-putty: #dcd0c4;
+  --color-paper: #f2f1e6;
+  --color-paper-lift: #f8f7ee;
+  --color-paper-deep: #e6e5d6;
+  --color-putty: #ded2c6;
 
-  --color-ink: #303024;
-  --color-ink-soft: #55554a;
-  --color-ink-faint: #7d7d70;
+  --color-ink: #2b2b21;
+  --color-ink-soft: #56564b;
+  --color-ink-faint: #828274;
 
   --color-sage: #848460;
   --color-sage-deep: #545430;
   --color-brass: #a89060;
-  --color-brass-deep: #847854;
+  --color-brass-deep: #7f6d43;
 
-  --color-bluebell: #6090c0;
-  --color-bluebell-deep: #43709e;
+  --color-bell: #6090c0;
+  --color-bell-deep: #3e6fa6;
+  --color-pollen: #e8c55a;
 
-  --font-display: var(--font-playfair), Georgia, serif;
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-script: var(--font-script), cursive;
-
-  --ease-drift: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-hand: var(--font-hand), cursive;
 }
-
-/*
-  SHAPE LOCK (documented, per skill 4.4): images and cards are square-cornered
-  like printed plates. Interactive controls are full pills. Nothing in between.
-*/
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
 }
 
 body {
@@ -57,106 +34,66 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
-/*
-  Paper grain. The brand literally lives on stock — Jessica's own animated logo
-  renders the mark on visible cardstock. Fixed + pointer-events-none so it never
-  triggers repaints on scroll (skill §6).
-*/
-.grain {
+/* Paper grain — one static tile, no blend mode over animating content. */
+body::before {
+  content: "";
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 60;
   pointer-events: none;
-  opacity: 0.048;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Fluid display type — never let a headline blow past 2 lines. */
-.t-display {
+.display {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 0.94;
-  letter-spacing: -0.022em;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
 }
 
-/*
-  Capped so the 7-word headline lands in exactly 2 lines on desktop. The 2rem
-  floor lets "Every Season of Life" hold one line at 375px instead of orphaning
-  a word.
-*/
-.t-hero {
-  font-size: clamp(2rem, 5.7vw, 5.6rem);
-}
-
-@media (min-width: 400px) {
-  .t-hero {
-    font-size: clamp(2.4rem, 5.7vw, 5.6rem);
-  }
-}
-
-/* One marquee per page (skill §5) — the member strip under the hero. */
-@keyframes drift-x {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-.marquee-track {
-  animation: drift-x 68s linear infinite;
-  will-change: transform;
-}
-
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}
-
-.t-section {
-  font-size: clamp(2rem, 4.4vw, 3.9rem);
-}
-
-.t-card {
-  font-size: clamp(1.28rem, 1.8vw, 1.72rem);
-  line-height: 1.06;
-}
-
-.t-script {
-  font-family: var(--font-script);
+.hand {
+  font-family: var(--font-hand);
   font-weight: 400;
 }
 
-/* Brass hairline — the one ornamental flourish, borrowed from the wreath. */
-.rule-brass {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    color-mix(in oklab, var(--color-brass) 62%, transparent) 18%,
-    color-mix(in oklab, var(--color-brass) 62%, transparent) 82%,
-    transparent
-  );
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
 }
 
-/* Accessible focus, in the locked accent. */
-:where(a, button, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-bluebell);
+/* Body copy stays plainly legible — the flourish is never in the paragraph. */
+.prose-warm {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--color-ink-soft);
+}
+
+.prose-warm strong {
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-bell);
   outline-offset: 3px;
   border-radius: 2px;
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--color-bluebell) 26%, transparent);
-  color: var(--color-ink);
+  background: #6090c04a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

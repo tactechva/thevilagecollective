@@ -1,32 +1,46 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MEMBERS, SEASONS } from "@/data/members";
-import { SeasonTiles } from "@/components/season-tiles";
-import { buildTiles } from "@/lib/tiles";
-import { Reveal } from "@/components/reveal";
+import { Sprig, ForgetMeNot } from "@/components/floral";
 
 export const metadata: Metadata = {
   title: "Seasons",
   description:
-    "Life doesn't happen one service at a time. Find the people you need for the season you're actually in — buying a home, welcoming a baby, or when life gets hard.",
+    "Life doesn't happen one service at a time. Find the people you need for the season you're actually in.",
 };
 
 export default function SeasonsPage() {
-  const tiles = buildTiles(SEASONS, MEMBERS);
-
   return (
-    <section className="px-6 pt-36 pb-8 sm:px-10 sm:pt-44">
+    <section className="px-6 pt-32 pb-8 sm:px-10 sm:pt-40">
       <div className="mx-auto max-w-[1180px]">
-        <header className="max-w-[38ch]">
-          <h1 className="t-display t-section">Seasons</h1>
-          <p className="mt-6 text-[15.5px] leading-[1.7] text-ink-soft">
-            A family buying a home needs a realtor, a cleaner, and a roofer. New parents need
-            something else entirely. Start where you actually are.
-          </p>
-        </header>
+        <Sprig className="h-6 w-[200px]" />
+        <h1 className="display mt-10 text-[clamp(2.2rem,5vw,4rem)]">Seasons</h1>
+        <p className="prose-warm mt-5 max-w-[52ch]">
+          A family buying a home needs a realtor, a cleaner, and a roofer. New parents need
+          something else entirely. Start where you actually are.
+        </p>
 
-        <Reveal className="mt-14">
-          <SeasonTiles tiles={tiles} />
-        </Reveal>
+        <ol className="mt-16 border-t border-brass/20">
+          {SEASONS.map((s, i) => {
+            const n = MEMBERS.filter((m) => m.seasons.includes(s.slug)).length;
+            return (
+              <li key={s.slug} className="border-b border-brass/20">
+                <Link href={`/seasons/${s.slug}`} className="group flex items-center gap-5 py-7 sm:gap-8">
+                  <span className="shrink-0 opacity-40 transition-opacity duration-500 group-hover:opacity-100">
+                    <ForgetMeNot size={26} delay={i * 0.04} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="display block text-[clamp(1.6rem,3.2vw,2.5rem)] leading-[1.05] transition-colors duration-500 group-hover:text-bell-deep">
+                      {s.label}
+                    </span>
+                    <span className="prose-warm mt-1.5 block max-w-[46ch] text-[14px]">{s.blurb}</span>
+                  </span>
+                  <span className="eyebrow shrink-0 tabular-nums">{n}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </section>
   );
