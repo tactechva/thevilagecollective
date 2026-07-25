@@ -54,39 +54,41 @@ const STATIONS: { x: number; y: number; rot: number }[] = [
   { x: 1760, y: 4460, rot: -2.2 },
 ];
 
-/* smooth cubic path through the field, so the vine reads as one plant */
-function vinePath(pts: { x: number; y: number }[]) {
-  let d = `M${pts[0].x} ${pts[0].y}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i];
-    const b = pts[i + 1];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const lat = i % 2 === 0 ? 0.34 : -0.34; /* alternate the bow so it snakes */
-    const c1x = a.x + dx * 0.18 - dy * lat * 0.34;
-    const c1y = a.y + dy * 0.42 + dx * lat * 0.18;
-    const c2x = b.x - dx * 0.18 + dy * lat * 0.34;
-    const c2y = b.y - dy * 0.42 - dx * lat * 0.18;
-    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`;
-  }
-  return d;
-}
-
 /*
   The vine is split into ONE SVG PER SEGMENT rather than a single sheet spanning
   the whole field. A 2900x4900 element inside a scaled ancestor rasterises to
   roughly 3570x6030, which is past the 4096px max texture size on a lot of GPUs —
   the layer then renders as nothing at all. Per-segment sheets stay small, and
   each one carries the slice of the draw progress that belongs to it.
+
+  Control points come from a Catmull-Rom spline through ALL the stations, which is
+  what makes the segments join smoothly. Bowing each segment on its own put a hard
+  V kink at every station — the tangents did not match across the joins.
 */
+const TENSION = 5.4;
+
+function controlPoints(i: number) {
+  const pts = STATIONS;
+  const p0 = pts[Math.max(i - 1, 0)];
+  const p1 = pts[i];
+  const p2 = pts[i + 1];
+  const p3 = pts[Math.min(i + 2, pts.length - 1)];
+  return {
+    c1: { x: p1.x + (p2.x - p0.x) / TENSION, y: p1.y + (p2.y - p0.y) / TENSION },
+    c2: { x: p2.x - (p3.x - p1.x) / TENSION, y: p2.y - (p3.y - p1.y) / TENSION },
+  };
+}
+
 const SEGMENTS = STATIONS.slice(0, -1).map((a, i) => {
   const b = STATIONS[i + 1];
-  const pad = 260;
-  const minX = Math.min(a.x, b.x) - pad;
-  const minY = Math.min(a.y, b.y) - pad;
-  const w = Math.abs(b.x - a.x) + pad * 2;
-  const h = Math.abs(b.y - a.y) + pad * 2;
-  return { i, minX, minY, w, h, d: vinePath([a, b]) };
+  const { c1, c2 } = controlPoints(i);
+  const pad = 420; /* control points bow outside the station bounding box */
+  const minX = Math.min(a.x, b.x, c1.x, c2.x) - pad;
+  const minY = Math.min(a.y, b.y, c1.y, c2.y) - pad;
+  const w = Math.max(a.x, b.x, c1.x, c2.x) - minX + pad;
+  const h = Math.max(a.y, b.y, c1.y, c2.y) - minY + pad;
+  const d = `M${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
+  return { i, minX, minY, w, h, d };
 });
 
 export function FlowerWorld({ seasons }: { seasons: Season[] }) {
@@ -250,15 +252,24 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
           style={{ opacity: outroOpacity }}
         >
-          <div className="pointer-events-auto text-center">
-            <p className="hand text-[clamp(2rem,4.4vw,3.4rem)] leading-[1.15]">
+          <div className="pointer-events-auto relative text-center">
+            {/* the last station is still fading out under this, so it gets clean ground too */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-x-24 -inset-y-16"
+              style={{
+                background:
+                  "radial-gradient(64% 58% at 50% 50%, #f2f1e6 0%, #f2f1e6 62%, rgba(242,241,230,0.85) 80%, rgba(242,241,230,0) 100%)",
+              }}
+            />
+            <p className="hand relative text-[clamp(2rem,4.4vw,3.4rem)] leading-[1.15]">
               No one should have to
               <br />
               navigate a season alone.
             </p>
             <Link
               href="/village"
-              className="mt-9 inline-flex items-center gap-3 rounded-full bg-ink px-8 py-4 text-[13px] tracking-[0.06em] text-paper transition-colors duration-500 hover:bg-bell-deep"
+              className="relative mt-9 inline-flex items-center gap-3 rounded-full bg-ink px-8 py-4 text-[13px] tracking-[0.06em] text-paper transition-colors duration-500 hover:bg-bell-deep"
             >
               Meet all 39 &rarr;
             </Link>
@@ -307,12 +318,18 @@ function Station({
     returned opacity 1 and the first station was fully visible at scroll zero.
   */
   const hold = Math.max(at - w * 0.45, inAt + 0.01);
-  const fade = Math.max(at + w * 0.45, hold + 0.01);
-  const gone = Math.max(at + w * 1.9, fade + 0.01);
+  /*
+    The outgoing tail is short on purpose. With a long tail a station sat at ~0.95
+    opacity while the camera had already carried it half off the frame edge, so you
+    saw a headline sliced down the middle. It now recedes quickly once you leave,
+    while still overlapping the next one enough to dissolve rather than cut.
+  */
+  const fade = Math.max(at + w * 0.22, hold + 0.01);
+  const gone = Math.max(at + w * 0.85, fade + 0.02);
 
-  const opacity = useTransform(p, [inAt, hold, fade, gone], [0, 1, 1, 0.06]);
-  const scale = useTransform(p, [inAt, Math.max(at, hold + 0.005), gone], [0.86, 1, 1.1]);
-  const textX = useTransform(p, [inAt, at + w * 1.6], [70, -70]);
+  const opacity = useTransform(p, [inAt, hold, fade, gone], [0, 1, 1, 0.05]);
+  const scale = useTransform(p, [inAt, Math.max(at, hold + 0.005), gone], [0.88, 1, 1.06]);
+  const textX = useTransform(p, [inAt, gone], [64, -64]);
 
   const flip = index % 2 === 1;
   const words = season.label.split(" ");
@@ -446,8 +463,8 @@ function VineSegment({
         d={seg.d}
         fill="none"
         stroke={SAGE}
-        strokeWidth="34"
-        strokeOpacity="0.13"
+        strokeWidth="20"
+        strokeOpacity="0.1"
         strokeLinecap="round"
         style={{ pathLength: draw }}
       />
@@ -514,7 +531,13 @@ function FormingLine({
   to: number;
   accentLast?: boolean;
 }) {
-  const step = (to - from) / Math.max(words.length, 1);
+  /*
+    Divided by length + 0.4 so the LAST word finishes exactly at `to`. Dividing by
+    length alone made each word's end `from + (i+1.4)*step`, which for the final
+    word landed past `to` — you arrived at a station before its name had finished
+    forming, and the last word sat permanently half-faded.
+  */
+  const step = (to - from) / (Math.max(words.length, 1) + 0.4);
   return (
     <span className="block">
       {words.map((word, i) => (
@@ -635,8 +658,16 @@ function ScrollPetal({
 }) {
   const t = useTransform(p, [from, to], [0, 1]);
   const scale = useTransform(t, [0, 1], [0.06, 1]);
-  const spin = useTransform(t, [0, 1], [deg - 52, deg]);
-  const transform = useTransform(spin, (s) => `rotate(${s} ${cx} ${cy})`);
+  const rotate = useTransform(t, [0, 1], [deg - 52, deg]);
+  /*
+    Rotation MUST live in style, not in the SVG transform attribute. Motion writes
+    its own transform into style, which overrides the attribute entirely — so with
+    rotate as an attribute all five petals rendered unrotated, stacked on top of
+    each other, and the flower looked like a single blue oval.
+
+    transformBox:"view-box" + an explicit origin at the flower's centre means both
+    the spin and the scale happen about the middle, so the bloom opens outward.
+  */
   return (
     <motion.ellipse
       cx={cx}
@@ -645,8 +676,13 @@ function ScrollPetal({
       ry={23 * r}
       fill={dark ? BLUE_DEEP : BLUE}
       fillOpacity={dark ? 0.82 : 0.96}
-      style={{ scale, opacity: t, transformBox: "fill-box", transformOrigin: "50% 100%" }}
-      transform={transform as unknown as string}
+      style={{
+        scale,
+        rotate,
+        opacity: t,
+        transformBox: "view-box",
+        transformOrigin: `${cx}px ${cy}px`,
+      }}
     />
   );
 }
