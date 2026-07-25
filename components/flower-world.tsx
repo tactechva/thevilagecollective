@@ -72,9 +72,22 @@ function vinePath(pts: { x: number; y: number }[]) {
   return d;
 }
 
-const FIELD_W = 2900;
-const FIELD_H = 4900;
-const VINE = vinePath(STATIONS);
+/*
+  The vine is split into ONE SVG PER SEGMENT rather than a single sheet spanning
+  the whole field. A 2900x4900 element inside a scaled ancestor rasterises to
+  roughly 3570x6030, which is past the 4096px max texture size on a lot of GPUs —
+  the layer then renders as nothing at all. Per-segment sheets stay small, and
+  each one carries the slice of the draw progress that belongs to it.
+*/
+const SEGMENTS = STATIONS.slice(0, -1).map((a, i) => {
+  const b = STATIONS[i + 1];
+  const pad = 260;
+  const minX = Math.min(a.x, b.x) - pad;
+  const minY = Math.min(a.y, b.y) - pad;
+  const w = Math.abs(b.x - a.x) + pad * 2;
+  const h = Math.abs(b.y - a.y) + pad * 2;
+  return { i, minX, minY, w, h, d: vinePath([a, b]) };
+});
 
 export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -153,8 +166,6 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const camZ = useTransform(camZraw, (z) => z * fit);
   const camR = useTransform(p, keys, rs);
 
-  /* the vine draws itself just ahead of the camera */
-  const draw = useTransform(p, [0.02, outro], [0.012, 1]);
 
   /*
     The arrival holds until it has finished FORMING, then departs. It used to start
@@ -192,34 +203,10 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           style={{ scale: camZ, rotate: camR, transformOrigin: "50% 50%" }}
         >
           <motion.div className="relative" style={{ x: camX, y: camY }}>
-            {/* the one continuous vine through the whole field */}
-            <svg
-              width={FIELD_W}
-              height={FIELD_H}
-              viewBox={`0 0 ${FIELD_W} ${FIELD_H}`}
-              className="pointer-events-none absolute overflow-visible"
-              style={{ left: -20, top: -20 }}
-              aria-hidden="true"
-            >
-              <motion.path
-                d={VINE}
-                fill="none"
-                stroke={SAGE}
-                strokeWidth="34"
-                strokeOpacity="0.13"
-                strokeLinecap="round"
-                style={{ pathLength: draw }}
-              />
-              <motion.path
-                d={VINE}
-                fill="none"
-                stroke={SAGE_DEEP}
-                strokeWidth="8"
-                strokeLinecap="round"
-                style={{ pathLength: draw }}
-              />
-              <FieldFoliage p={p} />
-            </svg>
+            {/* the vine, one small sheet per segment — see SEGMENTS above */}
+            {SEGMENTS.map((seg) => (
+              <VineSegment key={seg.i} seg={seg} total={SEGMENTS.length} p={p} />
+            ))}
 
             {seasons.slice(0, n).map((s, i) => (
               <Station
@@ -425,6 +412,89 @@ function Petals({ r = 1, cx = 60, cy = 60 }: { r?: number; cx?: number; cy?: num
       <circle cx={cx} cy={cy} r={9 * r} fill={POLLEN} />
       <circle cx={cx} cy={cy} r={3.6 * r} fill="#fff" fillOpacity="0.5" />
     </>
+  );
+}
+
+/*
+  One segment of the vine, plus the leaves that belong to it. Each is its own small
+  SVG sheet so no single composited layer is oversized, and each draws across the
+  slice of scroll between its two stations.
+*/
+function VineSegment({
+  seg,
+  total,
+  p,
+}: {
+  seg: { i: number; minX: number; minY: number; w: number; h: number; d: string };
+  total: number;
+  p: MotionValue<number>;
+}) {
+  const from = 0.02 + (seg.i / total) * 0.88;
+  const to = 0.02 + ((seg.i + 1) / total) * 0.88;
+  const draw = useTransform(p, [from, to], [seg.i === 0 ? 0.02 : 0, 1]);
+
+  return (
+    <svg
+      width={seg.w}
+      height={seg.h}
+      viewBox={`${seg.minX} ${seg.minY} ${seg.w} ${seg.h}`}
+      className="pointer-events-none absolute overflow-visible"
+      style={{ left: seg.minX, top: seg.minY }}
+      aria-hidden="true"
+    >
+      <motion.path
+        d={seg.d}
+        fill="none"
+        stroke={SAGE}
+        strokeWidth="34"
+        strokeOpacity="0.13"
+        strokeLinecap="round"
+        style={{ pathLength: draw }}
+      />
+      <motion.path
+        d={seg.d}
+        fill="none"
+        stroke={SAGE_DEEP}
+        strokeWidth="8"
+        strokeLinecap="round"
+        style={{ pathLength: draw }}
+      />
+      <SegmentLeaves seg={seg} from={from} to={to} p={p} />
+    </svg>
+  );
+}
+
+/* leaves for one segment, unfurling as the vine reaches them */
+function SegmentLeaves({
+  seg,
+  from,
+  to,
+  p,
+}: {
+  seg: { i: number; minX: number; minY: number };
+  from: number;
+  to: number;
+  p: MotionValue<number>;
+}) {
+  const a = STATIONS[seg.i];
+  const b = STATIONS[seg.i + 1];
+  const leaves = Array.from({ length: 5 }, (_, k) => {
+    const t = (k + 1) / 6;
+    return {
+      x: a.x + (b.x - a.x) * t + (k % 2 ? 110 : -130),
+      y: a.y + (b.y - a.y) * t + (k % 2 ? -60 : 80),
+      r: (seg.i * 47 + k * 71) % 360,
+      sc: 1 + ((seg.i + k) % 3) * 0.35,
+      dark: (seg.i + k) % 2 === 0,
+      at: from + (to - from) * t,
+    };
+  });
+  return (
+    <g>
+      {leaves.map((f, i) => (
+        <Unfurl key={i} p={p} f={f} />
+      ))}
+    </g>
   );
 }
 
@@ -647,33 +717,6 @@ function DockedMark({ p }: { p: MotionValue<number> }) {
     >
       <img src="/tvc-mark-keyed.png" alt="" className="h-full w-full object-contain" />
     </motion.div>
-  );
-}
-
-/* leaves and buds scattered along the vine, inside the field's own SVG */
-function FieldFoliage({ p }: { p: MotionValue<number> }) {
-  const items = STATIONS.flatMap((s, i) =>
-    Array.from({ length: 5 }, (_, k) => {
-      const t = (k + 1) / 6;
-      const nx = STATIONS[Math.min(i + 1, STATIONS.length - 1)].x;
-      const ny = STATIONS[Math.min(i + 1, STATIONS.length - 1)].y;
-      return {
-        x: s.x + (nx - s.x) * t + (k % 2 ? 120 : -140),
-        y: s.y + (ny - s.y) * t + (k % 2 ? -70 : 90),
-        r: (i * 47 + k * 71) % 360,
-        sc: 1 + ((i + k) % 3) * 0.35,
-        dark: (i + k) % 2 === 0,
-        at: 0.03 + ((i + t) / STATIONS.length) * 0.88,
-      };
-    }),
-  );
-
-  return (
-    <g aria-hidden="true">
-      {items.map((f, i) => (
-        <Unfurl key={i} p={p} f={f} />
-      ))}
-    </g>
   );
 }
 
