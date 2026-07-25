@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useReducedMotion,
@@ -15,141 +15,232 @@ type Season = { slug: string; label: string; blurb: string; count: number };
 
 const SAGE = "#848460";
 const SAGE_DEEP = "#545430";
-const SAGE_PALE = "#a3a385";
+const SAGE_PALE = "#a9a98d";
 const BLUE = "#6090c0";
 const BLUE_DEEP = "#3e6fa6";
 const POLLEN = "#e8c55a";
 const BRASS = "#a89060";
 
 /*
-  ══════════════════════════════════════════════════════════════════════
+  ══════════════════════════════════════════════════════════════════════════
   THE FLOWER WORLD
 
-  Scroll does not move the page past sections. Scroll SCRUBS A TIMELINE:
-  a single pinned stage that you travel down through, while a garden grows
-  around you in parallax layers.
+  Not sections stacked in a column, and not a vertical elevator. This is ONE
+  continuous garden laid out across a wide 2D field, and scroll drives a CAMERA
+  that flies through it — panning sideways and diagonally, pushing in and pulling
+  back out, banking a few degrees as it turns.
 
-  Three depths, moving at different rates, so it reads as space rather than
-  a page: pale foliage far behind, the stem and its blooms in the middle
-  (where the content lives), and big leaves sweeping past in front.
+  Every station sits at its own coordinate in that field, connected by a single
+  vine that winds through all of them. Because the vine is continuous and the
+  camera moves through space, beats DISSOLVE into one another — the next bloom is
+  already visible, out of focus and off to the side, while you are still reading
+  the current one. Nothing ever cuts.
 
-  Every season of life is one bloom on the stem. It opens as you reach it
-  and closes behind you. The label beside it is real DOM text — legible,
-  selectable, crawlable — never baked into the artwork.
-
-  Everything is transform and opacity only, so the whole world is GPU work
-  and holds frame rate on a phone.
-  ══════════════════════════════════════════════════════════════════════
+  Camera model: outer element owns scale + rotate, inner element owns translate.
+  A station at world (x, y) lands dead centre when the camera translates to
+  (-x, -y). All motion is transform and opacity, so the whole world is GPU work.
+  ══════════════════════════════════════════════════════════════════════════
 */
 
-const ROW = 62; /* vh of travel per season */
+/* Where each station sits in the field. A wandering path, never a column. */
+const STATIONS: { x: number; y: number; rot: number }[] = [
+  { x: 0, y: 0, rot: 0 },
+  { x: 1520, y: 560, rot: -2.5 },
+  { x: 360, y: 1240, rot: 2 },
+  { x: 1880, y: 1860, rot: -1.5 },
+  { x: 620, y: 2600, rot: 2.8 },
+  { x: 2180, y: 3120, rot: -2 },
+  { x: 480, y: 3820, rot: 1.6 },
+  { x: 1760, y: 4460, rot: -2.2 },
+];
+
+/* smooth cubic path through the field, so the vine reads as one plant */
+function vinePath(pts: { x: number; y: number }[]) {
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lat = i % 2 === 0 ? 0.34 : -0.34; /* alternate the bow so it snakes */
+    const c1x = a.x + dx * 0.18 - dy * lat * 0.34;
+    const c1y = a.y + dy * 0.42 + dx * lat * 0.18;
+    const c2x = b.x - dx * 0.18 + dy * lat * 0.34;
+    const c2y = b.y - dy * 0.42 - dx * lat * 0.18;
+    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`;
+  }
+  return d;
+}
+
+const FIELD_W = 2900;
+const FIELD_H = 4900;
+const VINE = vinePath(STATIONS);
 
 export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const n = seasons.length;
+  const n = Math.min(seasons.length, STATIONS.length);
+
+  /* the field is wider than a phone, so fit the camera to the viewport */
+  const [fit, setFit] = useState(0.72);
+  useEffect(() => {
+    const measure = () => {
+      const w = window.innerWidth;
+      setFit(Math.max(0.4, Math.min(1.15, w / 1500)));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const { scrollYProgress } = useScroll({ target: ref });
-  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 34, mass: 0.35 });
+  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 30, mass: 0.4 });
 
-  /* ── the journey: the world slides up beneath a fixed viewport ── */
-  const travel = useTransform(p, [0.14, 0.93], [18, -(n - 1) * ROW - 6]);
-  const worldY = useTransform(travel, (v) => `${v}vh`);
+  /*
+    The camera keyframes. Between stations the camera pulls BACK (so you see the
+    field and the vine ahead) and at each station it pushes IN. That in-and-out is
+    what makes it feel like flying rather than sliding.
+  */
+  const intro = 0.1;
+  const outro = 0.94;
+  const stops = Array.from({ length: n }, (_, i) => intro + ((i + 0.5) / n) * (outro - intro));
+  const mids = Array.from({ length: n - 1 }, (_, i) => (stops[i] + stops[i + 1]) / 2);
 
-  /* parallax: far layer barely moves, near layer races */
-  const farY = useTransform(p, [0, 1], ["6vh", "-34vh"]);
-  const nearY = useTransform(p, [0, 1], ["24vh", "-150vh"]);
-  const nearRot = useTransform(p, [0, 1], [-4, 9]);
+  /* interleave station stops and the mid-points between them */
+  const keys: number[] = [0];
+  const xs: number[] = [-STATIONS[0].x];
+  const ys: number[] = [-STATIONS[0].y];
+  const zs: number[] = [1.42];
+  const rs: number[] = [0];
 
-  /* ── act one: the mark, holding the screen, then receding ── */
-  const markScale = useTransform(p, [0, 0.13], [1, 0.62]);
-  const markY = useTransform(p, [0, 0.13], ["0vh", "-26vh"]);
-  const markOpacity = useTransform(p, [0, 0.09, 0.13], [1, 1, 0]);
-  const titleOpacity = useTransform(p, [0, 0.06, 0.11], [1, 1, 0]);
-  const titleY = useTransform(p, [0, 0.11], ["0vh", "-9vh"]);
-  const hintOpacity = useTransform(p, [0, 0.035], [1, 0]);
+  for (let i = 0; i < n; i++) {
+    keys.push(stops[i]);
+    xs.push(-STATIONS[i].x);
+    ys.push(-STATIONS[i].y);
+    zs.push(1.28); /* push in close at each station */
+    rs.push(STATIONS[i].rot);
 
-  /* ── act three: the closing line, as the garden thins out ── */
-  const outroOpacity = useTransform(p, [0.9, 0.96], [0, 1]);
-  const outroY = useTransform(p, [0.9, 1], ["6vh", "0vh"]);
-
-  /* Reduced motion: no travel, no pinning — a plain readable list. */
-  if (reduce) {
-    return <StaticSeasons seasons={seasons} />;
+    if (i < n - 1) {
+      const a = STATIONS[i];
+      const b = STATIONS[i + 1];
+      keys.push(mids[i]);
+      /* drift off the straight line so the turn arcs */
+      xs.push(-((a.x + b.x) / 2 + (i % 2 === 0 ? 190 : -190)));
+      ys.push(-((a.y + b.y) / 2));
+      zs.push(0.6); /* pull way back between stations — you see the field */
+      rs.push((a.rot + b.rot) / 2 + (i % 2 === 0 ? -3.5 : 3.5));
+    }
   }
+  keys.push(1);
+  xs.push(-STATIONS[n - 1].x - 240);
+  ys.push(-STATIONS[n - 1].y - 380);
+  zs.push(1.72);
+  rs.push(rs[rs.length - 1] + 2);
+
+  const camX = useTransform(p, keys, xs);
+  const camY = useTransform(p, keys, ys);
+  const camZraw = useTransform(p, keys, zs);
+  const camZ = useTransform(camZraw, (z) => z * fit);
+  const camR = useTransform(p, keys, rs);
+
+  /* the vine draws itself just ahead of the camera */
+  const draw = useTransform(p, [intro * 0.5, outro], [0.06, 1]);
+
+  /* act one, over the top of the world */
+  const titleOpacity = useTransform(p, [0, 0.045, 0.085], [1, 1, 0]);
+  const titleY = useTransform(p, [0, 0.085], ["0vh", "-7vh"]);
+  const hint = useTransform(p, [0, 0.03], [1, 0]);
+  const outroOpacity = useTransform(p, [0.955, 0.99], [0, 1]);
+
+  if (reduce) return <StaticSeasons seasons={seasons} />;
 
   return (
-    <div ref={ref} style={{ height: `${n * ROW + 190}vh` }} className="relative">
+    <div ref={ref} style={{ height: `${n * 118 + 150}vh` }} className="relative">
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        {/* ─── light on paper ─── */}
-        <div
+        {/* light on paper, drifting very slightly with the camera */}
+        <motion.div
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 85% at 62% 18%, #faf9f1 0%, #f2f1e6 46%, #e8e7d7 100%)",
+              "radial-gradient(115% 80% at 58% 26%, #fbfaf2 0%, #f2f1e6 44%, #e6e5d5 100%)",
           }}
         />
 
-        {/* ─── depth 1: far foliage, almost still ─── */}
-        <motion.div className="pointer-events-none absolute inset-0" style={{ y: farY }}>
-          <FarFoliage />
-        </motion.div>
-
-        {/*
-          ─── depth 2: the stem and its blooms — the content layer ───
-          The stem and every bloom share one column (RAIL wide) inside the same
-          centred container, so the blooms genuinely sit ON the vine instead of
-          floating beside it.
-        */}
-        <motion.div className="absolute inset-x-0 top-0" style={{ y: worldY }}>
-          <div className="relative mx-auto max-w-[1180px] px-6 sm:px-10">
-            <Stem count={n} rowVh={ROW} p={p} />
-            {seasons.map((s, i) => (
-              <BloomStation key={s.slug} season={s} index={i} total={n} p={p} />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ─── depth 3: near leaves sweeping past the camera ─── */}
+        {/* ── the camera ────────────────────────────────────────────── */}
         <motion.div
-          className="pointer-events-none absolute inset-0"
-          style={{ y: nearY, rotate: nearRot }}
+          className="absolute top-1/2 left-1/2"
+          style={{ scale: camZ, rotate: camR, transformOrigin: "50% 50%" }}
         >
-          <NearLeaves />
+          <motion.div className="relative" style={{ x: camX, y: camY }}>
+            {/* the one continuous vine through the whole field */}
+            <svg
+              width={FIELD_W}
+              height={FIELD_H}
+              viewBox={`0 0 ${FIELD_W} ${FIELD_H}`}
+              className="pointer-events-none absolute overflow-visible"
+              style={{ left: -20, top: -20 }}
+              aria-hidden="true"
+            >
+              <motion.path
+                d={VINE}
+                fill="none"
+                stroke={SAGE}
+                strokeWidth="34"
+                strokeOpacity="0.13"
+                strokeLinecap="round"
+                style={{ pathLength: draw }}
+              />
+              <motion.path
+                d={VINE}
+                fill="none"
+                stroke={SAGE_DEEP}
+                strokeWidth="8"
+                strokeLinecap="round"
+                style={{ pathLength: draw }}
+              />
+              <FieldFoliage />
+            </svg>
+
+            {seasons.slice(0, n).map((s, i) => (
+              <Station
+                key={s.slug}
+                season={s}
+                at={stops[i]}
+                index={i}
+                pos={STATIONS[i]}
+                p={p}
+              />
+            ))}
+          </motion.div>
         </motion.div>
 
-        {/* ─── act one, over the top ─── */}
+        {/* ── arrival, over the world ── */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6">
-          <motion.div style={{ scale: markScale, y: markY, opacity: markOpacity }}>
-            <OpeningBloom />
-          </motion.div>
-          <motion.div
-            className="mt-6 text-center"
-            style={{ opacity: titleOpacity, y: titleY }}
-          >
-            <h1 className="display text-[clamp(2.2rem,5.6vw,4.6rem)] leading-[1.02]">
+          <motion.div className="text-center" style={{ opacity: titleOpacity, y: titleY }}>
+            <Opening />
+            <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
               Every season of life
               <br />
               deserves a <span className="text-bell-deep">village</span>
             </h1>
-            <p className="prose-warm mx-auto mt-5 max-w-[42ch] text-[15px]">
+            <p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]">
               Thirty-nine local businesses across Hampton Roads, gathered by a woman who
               knows exactly who to call.
             </p>
           </motion.div>
 
           <motion.p
-            className="eyebrow absolute bottom-10 left-1/2 -translate-x-1/2"
-            style={{ opacity: hintOpacity }}
+            className="eyebrow absolute bottom-9 left-1/2 -translate-x-1/2"
+            style={{ opacity: hint }}
           >
-            Scroll to walk the village
+            Scroll to fly through the village
           </motion.p>
         </div>
 
-        {/* ─── the last thing you see in the world ─── */}
+        {/* ── the last thing you see ── */}
         <motion.div
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
-          style={{ opacity: outroOpacity, y: outroY }}
+          style={{ opacity: outroOpacity }}
         >
           <div className="pointer-events-auto text-center">
             <p className="hand text-[clamp(2rem,4.4vw,3.4rem)] leading-[1.15]">
@@ -165,112 +256,96 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
             </Link>
           </div>
         </motion.div>
+
+        {/* drifting petals, so the world is alive even when you stop */}
+        <Drift />
       </div>
     </div>
   );
 }
 
-/* width of the shared vine column — the stem and every bloom live here */
-const RAIL = 128;
+/*
+  One season, at its own coordinate in the field.
 
-/* ── the stem: one continuous vine down the whole world, drawing as you go ── */
-function Stem({ count, rowVh, p }: { count: number; rowVh: number; p: MotionValue<number> }) {
-  const seg = 1000; /* svg units per station */
-  const H = count * seg;
-  const mid = RAIL / 2;
-  const amp = RAIL * 0.3; /* gentle wobble, small enough that blooms stay on it */
-
-  const d =
-    `M${mid} 0 ` +
-    Array.from({ length: count }, (_, i) => {
-      const y = i * seg;
-      const bend = i % 2 === 0 ? amp : -amp;
-      return `C ${mid + bend} ${y + seg * 0.3}, ${mid - bend} ${y + seg * 0.7}, ${mid} ${y + seg}`;
-    }).join(" ");
-
-  const draw = useTransform(p, [0.12, 0.9], [0, 1]);
-
-  return (
-    <svg
-      viewBox={`0 0 ${RAIL} ${H}`}
-      preserveAspectRatio="none"
-      className="pointer-events-none absolute top-0 left-6 overflow-visible sm:left-10"
-      style={{ width: RAIL, height: `${count * rowVh}vh` }}
-      aria-hidden="true"
-    >
-      <motion.path
-        d={d}
-        fill="none"
-        stroke={SAGE}
-        strokeWidth="22"
-        strokeOpacity="0.14"
-        strokeLinecap="round"
-        style={{ pathLength: draw }}
-      />
-      <motion.path
-        d={d}
-        fill="none"
-        stroke={SAGE_DEEP}
-        strokeWidth="6"
-        strokeLinecap="round"
-        style={{ pathLength: draw }}
-      />
-    </svg>
-  );
-}
-
-/* ── one season: a bloom that opens as you arrive, with legible text beside it ── */
-function BloomStation({
+  It fades and scales through a WIDE window either side of its stop, so the
+  previous and next stations are still on screen — softly, off-centre, slightly
+  smaller — while you read this one. That overlap is what dissolves the beats
+  into each other instead of stacking them.
+*/
+function Station({
   season,
+  at,
   index,
-  total,
+  pos,
   p,
 }: {
   season: Season;
+  at: number;
   index: number;
-  total: number;
+  pos: { x: number; y: number; rot: number };
   p: MotionValue<number>;
 }) {
-  /* where on the timeline this station sits */
-  const at = 0.14 + ((index + 0.5) / total) * 0.76;
-  const w = 0.42 / total;
+  const w = 0.1;
+  const opacity = useTransform(
+    p,
+    [at - w * 1.9, at - w * 0.45, at + w * 0.45, at + w * 1.9],
+    [0, 1, 1, 0.06],
+  );
+  const scale = useTransform(p, [at - w * 1.9, at, at + w * 1.9], [0.86, 1, 1.1]);
+  const bloomSpin = useTransform(p, [at - w * 2, at + w * 2], [-90, 40]);
+  const bloomScale = useTransform(p, [at - w * 1.6, at - w * 0.2], [0.15, 1]);
+  const textX = useTransform(p, [at - w * 1.6, at + w * 1.6], [70, -70]);
 
-  const open = useTransform(p, [at - w * 2.4, at - w * 0.2, at + w * 1.6, at + w * 3], [0, 1, 1, 0]);
-  const petal = useTransform(p, [at - w * 2.4, at - w * 0.1], [0.1, 1]);
-  const spin = useTransform(p, [at - w * 2.4, at + w * 3], [-70, 26]);
-  const slide = useTransform(p, [at - w * 2.4, at + w * 3], [42, -42]);
+  const flip = index % 2 === 1;
 
   return (
-    <div
-      className="absolute inset-x-0 flex items-center"
-      style={{ top: `${index * ROW + ROW / 2}vh`, height: `${ROW}vh`, marginTop: `-${ROW / 2}vh` }}
+    <motion.div
+      className="absolute"
+      style={{
+        left: pos.x,
+        top: pos.y,
+        translateX: "-50%",
+        translateY: "-50%",
+        opacity,
+        scale,
+        rotate: -pos.rot, /* counter the camera bank so text stays level */
+      }}
     >
-      <div className="flex w-full items-center gap-6 sm:gap-10">
-        {/* the bloom sits in the vine column, centred on the stem */}
+      <div
+        className={`flex w-[min(88vw,1000px)] items-center gap-10 ${
+          flip ? "flex-row-reverse text-right" : ""
+        }`}
+      >
         <motion.div
-          className="flex shrink-0 items-center justify-center"
-          style={{ width: RAIL, scale: petal, rotate: spin, opacity: open }}
+          className="shrink-0"
+          style={{ rotate: bloomSpin, scale: bloomScale, transformOrigin: "50% 50%" }}
         >
-          <BigBloom />
+          <Bloom />
         </motion.div>
 
-        <motion.div style={{ opacity: open, x: slide }} className="min-w-0 flex-1">
+        <motion.div className="min-w-0 flex-1" style={{ x: textX }}>
           <Link href={`/seasons/${season.slug}`} className="group block">
             <p className="eyebrow">
               {String(index + 1).padStart(2, "0")} &nbsp;·&nbsp; {season.count} in your village
             </p>
-            <h2 className="display mt-3 text-[clamp(2rem,5vw,4rem)] leading-[1.02] transition-colors duration-500 group-hover:text-bell-deep">
+            <h2 className="display mt-3 text-[clamp(2.1rem,5.4vw,4.2rem)] leading-[1.01] transition-colors duration-500 group-hover:text-bell-deep">
               {season.label}
             </h2>
-            <p className="prose-warm mt-4 max-w-[34ch] text-[14.5px]">{season.blurb}</p>
-            <span className="mt-5 inline-flex items-center gap-2 text-[12.5px] text-bell-deep">
+            <p
+              className={`prose-warm mt-4 max-w-[34ch] text-[15px] ${flip ? "ml-auto" : ""}`}
+            >
+              {season.blurb}
+            </p>
+            <span className="mt-5 inline-flex items-center gap-2 text-[13px] text-bell-deep">
               Who you&rsquo;d call
-              <span className="transition-transform duration-500 group-hover:translate-x-1">&rarr;</span>
+              <span className="transition-transform duration-500 group-hover:translate-x-1">
+                &rarr;
+              </span>
             </span>
           </Link>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -292,138 +367,125 @@ function Petals({ r = 1, cx = 60, cy = 60 }: { r?: number; cx?: number; cy?: num
         />
       ))}
       <circle cx={cx} cy={cy} r={9 * r} fill={POLLEN} />
-      <circle cx={cx} cy={cy} r={3.6 * r} fill="#fff" fillOpacity="0.55" />
+      <circle cx={cx} cy={cy} r={3.6 * r} fill="#fff" fillOpacity="0.5" />
     </>
   );
 }
 
-function BigBloom() {
+function Bloom() {
   return (
-    <svg
-      viewBox="0 0 120 120"
-      className="h-[16vw] max-h-[130px] min-h-[62px] w-[16vw] max-w-[130px] min-w-[62px] overflow-visible"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 120 120" className="h-[124px] w-[124px] overflow-visible sm:h-[168px] sm:w-[168px]" aria-hidden="true">
       <Petals />
     </svg>
   );
 }
 
-/*
-  The arrival. Her real monogram is the hero — it is a genuine piece of illustration
-  and not ours to redraw badly. What we author is the motion around it: a brass halo
-  drawing open (her wreath never closes) and forget-me-nots blooming at the base.
-*/
-function OpeningBloom() {
+function Opening() {
   const reduce = useReducedMotion();
   const ease = [0.16, 1, 0.3, 1] as const;
-
   return (
-    <div className="relative h-[min(64vw,340px)] w-[min(64vw,340px)]">
-      <svg viewBox="0 0 340 340" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
+    <div className="relative mx-auto h-[min(56vw,290px)] w-[min(56vw,290px)]">
+      <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
         <motion.path
-          d="M64 258 C 6 200, 12 96, 88 46 C 160 -2, 262 14, 306 84 C 332 126, 332 182, 306 222"
+          d="M56 228 C 4 176, 10 84, 78 40 C 142 -4, 232 12, 272 74 C 296 112, 296 162, 272 200"
           fill="none"
           stroke={BRASS}
-          strokeWidth="1.6"
+          strokeWidth="1.5"
           strokeOpacity="0.55"
           initial={{ pathLength: reduce ? 1 : 0 }}
           animate={{ pathLength: 1 }}
-          transition={{ duration: reduce ? 0 : 2.4, delay: reduce ? 0 : 0.25, ease }}
+          transition={{ duration: reduce ? 0 : 2.3, delay: reduce ? 0 : 0.25, ease }}
         />
         {[
-          { cx: 252, cy: 272, r: 0.9 },
-          { cx: 296, cy: 246, r: 0.62 },
-          { cx: 226, cy: 306, r: 0.52 },
+          { cx: 224, cy: 242, r: 0.82 },
+          { cx: 262, cy: 218, r: 0.56 },
+          { cx: 200, cy: 272, r: 0.46 },
         ].map((b, i) => (
           <motion.g
             key={i}
-            initial={{ scale: reduce ? 1 : 0, opacity: 0, rotate: reduce ? 0 : -60 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ duration: reduce ? 0.2 : 1, delay: reduce ? 0 : 1.6 + i * 0.16, ease }}
+            initial={{ scale: reduce ? 1 : 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: reduce ? 0.2 : 0.95, delay: reduce ? 0 : 1.5 + i * 0.15, ease }}
             style={{ transformBox: "fill-box", transformOrigin: "center" }}
           >
             <Petals r={b.r} cx={b.cx} cy={b.cy} />
           </motion.g>
         ))}
       </svg>
-
       <motion.img
         src="/tvc-mark-keyed.png"
         alt="The Village Collective — an open olive wreath around the letters T V C, with a brass key and forget-me-nots"
         width={744}
         height={675}
-        className="absolute inset-0 m-auto block h-auto w-[86%]"
+        className="absolute inset-0 m-auto block h-auto w-[84%]"
         initial={{ opacity: 0, scale: reduce ? 1 : 0.93 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: reduce ? 0.2 : 1.9, delay: reduce ? 0 : 0.4, ease }}
+        transition={{ duration: reduce ? 0.2 : 1.8, delay: reduce ? 0 : 0.35, ease }}
       />
     </div>
   );
 }
 
-function FarFoliage() {
-  const sprigs = [
-    { x: 4, y: 8, s: 1.5, r: -12 },
-    { x: 78, y: 4, s: 1.9, r: 14 },
-    { x: 62, y: 62, s: 1.3, r: -8 },
-    { x: 12, y: 70, s: 1.7, r: 22 },
-    { x: 88, y: 40, s: 1.1, r: -20 },
-    { x: 34, y: 88, s: 1.4, r: 10 },
-  ];
+/* leaves and buds scattered along the vine, inside the field's own SVG */
+function FieldFoliage() {
+  const items = STATIONS.flatMap((s, i) =>
+    Array.from({ length: 5 }, (_, k) => {
+      const t = (k + 1) / 6;
+      const nx = STATIONS[Math.min(i + 1, STATIONS.length - 1)].x;
+      const ny = STATIONS[Math.min(i + 1, STATIONS.length - 1)].y;
+      return {
+        x: s.x + (nx - s.x) * t + (k % 2 ? 120 : -140),
+        y: s.y + (ny - s.y) * t + (k % 2 ? -70 : 90),
+        r: (i * 47 + k * 71) % 360,
+        sc: 1 + ((i + k) % 3) * 0.35,
+        dark: (i + k) % 2 === 0,
+      };
+    }),
+  );
+
   return (
-    <svg
-      className="h-full w-full"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      {sprigs.map((f, i) => (
-        <g key={i} transform={`translate(${f.x} ${f.y}) rotate(${f.r}) scale(${f.s})`} opacity="0.2">
-          <path d="M0 0 C 5 4, 8 10, 7 17" stroke={SAGE_PALE} strokeWidth="0.5" fill="none" />
-          {[0, 1, 2, 3].map((k) => (
-            <ellipse
-              key={k}
-              cx={1.6 + k * 1.7}
-              cy={2 + k * 4}
-              rx="2.6"
-              ry="1.3"
-              fill={SAGE_PALE}
-              transform={`rotate(${k % 2 ? 30 : -30} ${1.6 + k * 1.7} ${2 + k * 4})`}
-            />
-          ))}
+    <g aria-hidden="true">
+      {items.map((f, i) => (
+        <g
+          key={i}
+          transform={`translate(${f.x} ${f.y}) rotate(${f.r}) scale(${f.sc})`}
+          opacity={f.dark ? 0.5 : 0.32}
+        >
+          <path d="M0 0 C 22 -18, 48 -8, 46 18 C 22 32, 3 22, 0 0 Z" fill={f.dark ? SAGE : SAGE_PALE} />
+          <path d="M0 0 C 18 4, 34 10, 46 18" stroke="#f2f1e6" strokeWidth="1.4" fill="none" opacity="0.45" />
         </g>
       ))}
-    </svg>
+    </g>
   );
 }
 
-/*
-  Foreground leaves. Kept deliberately faint and small: this layer exists to give
-  the world depth as it slides past, not to compete with the content. It uses
-  meet (not none) so the artwork never stretches into blobs.
-*/
-function NearLeaves() {
-  const leaves = [
-    { x: 2, y: 14, s: 1.5, r: 24, o: 0.16 },
-    { x: 88, y: 30, s: 1.8, r: -34, o: 0.13 },
-    { x: 6, y: 78, s: 1.6, r: -12, o: 0.15 },
-    { x: 94, y: 86, s: 1.3, r: 40, o: 0.12 },
+/* ambient petals drifting across the frame — pure CSS, never scroll-bound */
+function Drift() {
+  const petals = [
+    { l: "8%", d: 0, dur: 26, s: 0.5 },
+    { l: "27%", d: 6, dur: 33, s: 0.34 },
+    { l: "52%", d: 12, dur: 29, s: 0.44 },
+    { l: "71%", d: 3, dur: 37, s: 0.28 },
+    { l: "88%", d: 17, dur: 31, s: 0.4 },
   ];
   return (
-    <svg
-      className="h-full w-full"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      {leaves.map((l, i) => (
-        <g key={i} transform={`translate(${l.x} ${l.y}) rotate(${l.r}) scale(${l.s})`} opacity={l.o}>
-          <path d="M0 0 C 6 -5, 13 -2, 12 5 C 6 9, 1 6, 0 0 Z" fill={i % 2 ? SAGE : SAGE_DEEP} />
-          <path d="M0 0 C 5 1, 9 3, 12 5" stroke="#f2f1e6" strokeWidth="0.3" fill="none" opacity="0.6" />
-        </g>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      {petals.map((p, i) => (
+        <span
+          key={i}
+          className="drift-petal absolute -top-24"
+          style={{
+            left: p.l,
+            animationDelay: `-${p.d}s`,
+            animationDuration: `${p.dur}s`,
+          }}
+        >
+          <svg viewBox="0 0 120 120" style={{ width: 120 * p.s, height: 120 * p.s }}>
+            <Petals />
+          </svg>
+        </span>
       ))}
-    </svg>
+    </div>
   );
 }
 

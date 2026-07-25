@@ -79,6 +79,37 @@ body::before {
   color: var(--color-ink);
 }
 
+/*
+  Ambient petals falling across the frame. Pure CSS, never scroll-bound, so the
+  world stays alive when the user stops moving. transform + opacity only.
+*/
+@keyframes petal-drift {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.32;
+  }
+  50% {
+    transform: translate3d(9vw, 55vh, 0) rotate(190deg);
+  }
+  92% {
+    opacity: 0.32;
+  }
+  100% {
+    transform: translate3d(-4vw, 118vh, 0) rotate(400deg);
+    opacity: 0;
+  }
+}
+
+.drift-petal {
+  animation-name: petal-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
 :where(a, button, input, [tabindex]):focus-visible {
   outline: 2px solid var(--color-bell);
   outline-offset: 3px;
