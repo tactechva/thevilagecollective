@@ -8,7 +8,7 @@ type Season = { slug: string; label: string; blurb: string; count: number };
 
 /*
   The eight seasons of life, as eight blooms on one stem that draws itself down the
-  page as you read. Not a grid of boxes — a plant.
+  page as you read. Not a grid of boxes, a plant.
 
   The stem is a single SVG path whose pathLength is tied to scroll. Each bloom opens
   when the stem reaches it, and its label is plain legible text sitting beside it, so

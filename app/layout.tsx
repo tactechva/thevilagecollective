@@ -28,7 +28,7 @@ const hand = Beau_Rivage({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://thevillagecollective757.com"),
   title: {
-    default: "The Village Collective — Trusted Local Businesses in Hampton Roads",
+    default: "The Village Collective · Trusted Local Businesses in Hampton Roads",
     template: "%s · The Village Collective",
   },
   description:

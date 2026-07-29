@@ -8,7 +8,7 @@ import { MemberPlate } from "@/components/member-plate";
 import { ForgetMeNot } from "@/components/floral";
 
 /*
-  The full village. Filtering is over 39 records in memory — instant, no spinner.
+  The full village. Filtering is over 39 records in memory, instant, no spinner.
 
   Deliberately absent: any sort-by-rating or "featured first". Order is Jessica's
   (Bless This Mess first, then alphabetical) and never changes by quality, because

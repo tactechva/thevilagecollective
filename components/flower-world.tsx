@@ -27,12 +27,12 @@ const BRASS = "#a89060";
 
   Not sections stacked in a column, and not a vertical elevator. This is ONE
   continuous garden laid out across a wide 2D field, and scroll drives a CAMERA
-  that flies through it — panning sideways and diagonally, pushing in and pulling
+  that flies through it, panning sideways and diagonally, pushing in and pulling
   back out, banking a few degrees as it turns.
 
   Every station sits at its own coordinate in that field, connected by a single
   vine that winds through all of them. Because the vine is continuous and the
-  camera moves through space, beats DISSOLVE into one another — the next bloom is
+  camera moves through space, beats DISSOLVE into one another, the next bloom is
   already visible, out of focus and off to the side, while you are still reading
   the current one. Nothing ever cuts.
 
@@ -57,13 +57,13 @@ const STATIONS: { x: number; y: number; rot: number }[] = [
 /*
   The vine is split into ONE SVG PER SEGMENT rather than a single sheet spanning
   the whole field. A 2900x4900 element inside a scaled ancestor rasterises to
-  roughly 3570x6030, which is past the 4096px max texture size on a lot of GPUs —
+  roughly 3570x6030, which is past the 4096px max texture size on a lot of GPUs
   the layer then renders as nothing at all. Per-segment sheets stay small, and
   each one carries the slice of the draw progress that belongs to it.
 
   Control points come from a Catmull-Rom spline through ALL the stations, which is
   what makes the segments join smoothly. Bowing each segment on its own put a hard
-  V kink at every station — the tangents did not match across the joins.
+  V kink at every station, the tangents did not match across the joins.
 */
 const TENSION = 5.4;
 
@@ -98,7 +98,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
 
   /*
     Camera fit. On desktop we scale to the field's width. On a phone we deliberately
-    do NOT — fitting a 2900px field into 375px drove station text down to ~17px
+    do NOT, fitting a 2900px field into 375px drove station text down to ~17px
     headlines and ~8px body, which is unreadable. Phones stay close and get their
     sense of space from the camera's travel instead of from a wide shot.
   */
@@ -128,7 +128,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
 
   /* interleave station stops and the mid-points between them */
   /*
-    The camera does NOT start centred on station 0 — that put the first station
+    The camera does NOT start centred on station 0, that put the first station
     directly behind the arrival headline. It starts above and left of it, so the
     title has clean paper, then flies down onto the first bloom.
   */
@@ -152,7 +152,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
       /* drift off the straight line so the turn arcs */
       xs.push(-((a.x + b.x) / 2 + (i % 2 === 0 ? 190 : -190)));
       ys.push(-((a.y + b.y) / 2));
-      zs.push(0.6); /* pull way back between stations — you see the field */
+      zs.push(0.6); /* pull way back between stations, you see the field */
       rs.push((a.rot + b.rot) / 2 + (i % 2 === 0 ? -3.5 : 3.5));
     }
   }
@@ -205,7 +205,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           style={{ scale: camZ, rotate: camR, transformOrigin: "50% 50%" }}
         >
           <motion.div className="relative" style={{ x: camX, y: camY }}>
-            {/* the vine, one small sheet per segment — see SEGMENTS above */}
+            {/* the vine, one small sheet per segment, see SEGMENTS above */}
             {SEGMENTS.map((seg) => (
               <VineSegment key={seg.i} seg={seg} total={SEGMENTS.length} p={p} />
             ))}
@@ -226,21 +226,54 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
 
         {/* ── arrival, over the world ── */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6">
+          {/*
+            The scroll-driven values stay on the OUTER element. The load-in is a
+            separate layer inside it, so the two never fight: the page introduces
+            itself once on arrival, then scroll takes over and forms everything.
+          */}
           <motion.div className="text-center" style={{ opacity: titleOpacity, y: titleY }}>
-            <FormingWreath p={p} />
-            <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
-              <span className="block">Every season of life</span>
-              {/* the second line writes itself word by word as you scroll */}
-              <FormingLine p={p} words={["deserves", "a", "village"]} from={0.006} to={0.062} accentLast />
-            </h1>
-            <FormingParagraph p={p} from={0.03} to={0.072} />
+            <motion.div
+              initial="rest"
+              animate="in"
+              variants={{
+                rest: {},
+                in: { transition: { staggerChildren: 0.16, delayChildren: 0.34 } },
+              }}
+            >
+              <LoadIn>
+                <FormingWreath p={p} />
+              </LoadIn>
+              <LoadIn>
+                <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
+                  <span className="block">Every season of life</span>
+                  {/* the second line writes itself word by word as you scroll */}
+                  <FormingLine
+                    p={p}
+                    words={["deserves", "a", "village"]}
+                    from={0.006}
+                    to={0.062}
+                    accentLast
+                  />
+                </h1>
+              </LoadIn>
+              <LoadIn>
+                <FormingParagraph p={p} from={0.03} to={0.072} />
+              </LoadIn>
+            </motion.div>
           </motion.div>
 
           <motion.p
             className="eyebrow absolute bottom-9 left-1/2 -translate-x-1/2"
             style={{ opacity: hint }}
           >
-            Keep scrolling &mdash; it grows as you go
+            <motion.span
+              className="block"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
+            >
+              Keep scrolling. It grows as you go
+            </motion.span>
           </motion.p>
         </div>
 
@@ -285,8 +318,8 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   One season, at its own coordinate in the field.
 
   It fades and scales through a WIDE window either side of its stop, so the
-  previous and next stations are still on screen — softly, off-centre, slightly
-  smaller — while you read this one. That overlap is what dissolves the beats
+  previous and next stations are still on screen, softly, off-centre, slightly
+  smaller, while you read this one. That overlap is what dissolves the beats
   into each other instead of stacking them.
 */
 function Station({
@@ -302,7 +335,7 @@ function Station({
   index: number;
   pos: { x: number; y: number; rot: number };
   p: MotionValue<number>;
-  /** No station may appear before this point — it is when the arrival title clears. */
+  /** No station may appear before this point, it is when the arrival title clears. */
   gate: number;
 }) {
   const w = 0.1;
@@ -314,7 +347,7 @@ function Station({
   /*
     Every later keyframe is derived FROM inAt so the input array is guaranteed
     monotonically increasing. It was not: for station 0 the gate (0.108) exceeded
-    `at - w*0.45` (0.1075), which is an invalid useTransform range — Motion
+    `at - w*0.45` (0.1075), which is an invalid useTransform range, Motion
     returned opacity 1 and the first station was fully visible at scroll zero.
   */
   const hold = Math.max(at - w * 0.45, inAt + 0.01);
@@ -515,6 +548,29 @@ function SegmentLeaves({
   );
 }
 
+/*
+  One beat of the arrival's load-in. Rises and settles once on mount, then never
+  animates again, so it cannot interfere with the scroll-driven forming inside it.
+*/
+function LoadIn({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      variants={{
+        rest: { opacity: 0, y: reduce ? 0 : 20, filter: reduce ? "blur(0px)" : "blur(5px)" },
+        in: {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          transition: { duration: reduce ? 0.2 : 1.05, ease: [0.16, 1, 0.3, 1] },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /* ── forming primitives: everything below is a function of SCROLL, not time ── */
 
 /** A line of display type that assembles word by word as you scroll. */
@@ -534,7 +590,7 @@ function FormingLine({
   /*
     Divided by length + 0.4 so the LAST word finishes exactly at `to`. Dividing by
     length alone made each word's end `from + (i+1.4)*step`, which for the final
-    word landed past `to` — you arrived at a station before its name had finished
+    word landed past `to`, you arrived at a station before its name had finished
     forming, and the last word sat permanently half-faded.
   */
   const step = (to - from) / (Math.max(words.length, 1) + 0.4);
@@ -661,7 +717,7 @@ function ScrollPetal({
   const rotate = useTransform(t, [0, 1], [deg - 52, deg]);
   /*
     Rotation MUST live in style, not in the SVG transform attribute. Motion writes
-    its own transform into style, which overrides the attribute entirely — so with
+    its own transform into style, which overrides the attribute entirely, so with
     rotate as an attribute all five petals rendered unrotated, stacked on top of
     each other, and the flower looked like a single blue oval.
 
@@ -689,7 +745,7 @@ function ScrollPetal({
 
 /*
   The wreath ASSEMBLES under the scroll. At rest you get the first stroke of the
-  brass arc and nothing else — her mark rises into it, then the forget-me-nots
+  brass arc and nothing else, her mark rises into it, then the forget-me-nots
   open at its base, one petal at a time. Scroll back up and it un-builds.
 */
 function FormingWreath({ p }: { p: MotionValue<number> }) {
@@ -727,7 +783,7 @@ function FormingWreath({ p }: { p: MotionValue<number> }) {
       </svg>
       <motion.img
         src="/tvc-mark-keyed.png"
-        alt="The Village Collective — an open olive wreath around the letters T V C, with a brass key and forget-me-nots"
+        alt="The Village Collective logo: an open olive wreath around the letters T V C, with a brass key and forget-me-nots"
         width={744}
         height={675}
         className="absolute inset-0 m-auto block h-auto w-[84%]"
@@ -778,7 +834,7 @@ function Unfurl({
   );
 }
 
-/* ambient petals drifting across the frame — pure CSS, never scroll-bound */
+/* ambient petals drifting across the frame, pure CSS, never scroll-bound */
 function Drift() {
   const petals = [
     { l: "8%", d: 0, dur: 26, s: 0.5 },

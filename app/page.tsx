@@ -12,7 +12,7 @@ export default function Home() {
     count: MEMBERS.filter((m) => m.seasons.includes(s.slug)).length,
   }));
 
-  /* Jessica's own notes, verbatim — her dad, her attorney, her dog walker. */
+  /* Jessica's own notes, verbatim, her dad, her attorney, her dog walker. */
   const voices = ["amir-electric-inc", "babcock-moore-lambert-plc", "the-dogfather-s-dog-walking-llc"]
     .map((s) => MEMBERS.find((m) => m.slug === s))
     .filter((m): m is NonNullable<typeof m> => Boolean(m?.jessNote));
@@ -34,8 +34,8 @@ export default function Home() {
             </p>
             <div className="prose-warm max-w-[58ch] space-y-5">
               <p>
-                Jessica cleans houses. Routine, deep, move-out &mdash; which means she is inside
-                them, on the good weeks and the hard ones.
+                Jessica cleans houses. Routine, deep, move-out. Which means she is inside them,
+                on the good weeks and the hard ones.
               </p>
               <p>
                 <strong>&ldquo;Who do you trust?&rdquo;</strong> Families weren&rsquo;t looking for
@@ -43,7 +43,7 @@ export default function Home() {
               </p>
               <p>
                 Those answers became a list. The list became thirty-nine businesses across
-                Hampton Roads &mdash; an electrician, a doula, a lawyer, a bakery, a dog walker, a
+                Hampton Roads: an electrician, a doula, a lawyer, a bakery, a dog walker, a
                 glass shop. Free to browse, none of them ranked, every one of them hers.
               </p>
             </div>

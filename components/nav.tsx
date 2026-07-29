@@ -12,7 +12,7 @@ const LINKS = [
 ];
 
 /*
-  Not a bar. No box, no backdrop, no border — the wordmark and three words sit
+  Not a bar. No box, no backdrop, no border, the wordmark and three words sit
   directly on the paper, and a forget-me-not marks your place. Clear on desktop,
   which is the one thing a nav must be.
 */

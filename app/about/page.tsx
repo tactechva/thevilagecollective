@@ -42,8 +42,8 @@ export default function AboutPage() {
               </p>
               <p>
                 The Village Collective brings those trusted businesses together in one place so you
-                spend less time wondering who to call and more time focusing on what matters most
-                &mdash; and you can explore every recommendation completely free.
+                spend less time wondering who to call and more time focusing on what matters most,
+                and you can explore every recommendation completely free.
               </p>
             </div>
           </div>

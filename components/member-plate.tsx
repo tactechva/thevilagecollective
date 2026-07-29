@@ -6,7 +6,7 @@ import type { Member } from "@/data/members";
 
   Measured fact: all 38 logo files are fully opaque rectangles, 28 of them
   photographs and 5 near-black. They cannot float on paper as cut-out marks, so each
-  one is matted inside a fixed optical box with a hairline — same box, same size,
+  one is matted inside a fixed optical box with a hairline, same box, same size,
   every member, which is also what keeps the page from visually ranking anyone.
 
   `fit: "contain"` letterboxes wide wordmarks and tall portraits so nothing is ever

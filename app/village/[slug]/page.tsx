@@ -26,7 +26,7 @@ export async function generateMetadata({
   if (!m) return {};
   return {
     title: m.title,
-    description: `${m.tagline} — ${m.serviceArea}. In The Village Collective, a curated circle of trusted local businesses across Hampton Roads.`,
+    description: `${m.tagline}. ${m.serviceArea}. In The Village Collective, a curated circle of trusted local businesses across Hampton Roads.`,
     openGraph: {
       title: m.title,
       description: m.tagline,

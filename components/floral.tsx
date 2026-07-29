@@ -4,8 +4,8 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "mo
 import { useRef } from "react";
 
 /*
-  Hand-authored botanical system. Every path here was drawn by hand for this brand —
-  the olive laurel, the forget-me-not, the brass key — because they are the three
+  Hand-authored botanical system. Every path here was drawn by hand for this brand
+  the olive laurel, the forget-me-not, the brass key, because they are the three
   things in Jessica's own mark.
 
   All motion is stroke-dashoffset (path drawing), scale and rotate: GPU-only, so a
@@ -246,7 +246,7 @@ export function DrawnWreath({ size = 470, className }: { size?: number; classNam
   const reduce = useReducedMotion();
   const ease = [0.16, 1, 0.3, 1] as const;
 
-  /* an open arc, drawn around her mark — it stops short on purpose */
+  /* an open arc, drawn around her mark, it stops short on purpose */
   const halo =
     "M 96 372 C 18 300, 10 168, 96 92 C 176 22, 300 26, 372 96 C 430 154, 438 246, 398 312";
 
@@ -298,14 +298,14 @@ export function DrawnWreath({ size = 470, className }: { size?: number; classNam
       </motion.svg>
 
       {/*
-        `animate` is ALWAYS the visible state — never gated on reduced motion.
+        `animate` is ALWAYS the visible state, never gated on reduced motion.
         Gating it left the mark stuck at opacity 0 for reduced-motion users, i.e.
         permanently invisible. Reduced motion shortens the motion; it never removes
         the content.
       */}
       <motion.img
         src="/tvc-mark-keyed.png"
-        alt="The Village Collective — an open olive wreath around the letters T V C, with a brass key and forget-me-nots"
+        alt="The Village Collective logo: an open olive wreath around the letters T V C, with a brass key and forget-me-nots"
         width={744}
         height={675}
         className="relative block h-auto w-full"
