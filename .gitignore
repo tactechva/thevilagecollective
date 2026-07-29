@@ -8,7 +8,10 @@ next-env.d.ts
 .env*
 test-results
 
-# scratch diagnostics
-look.mjs
-*.scratch.mjs
-cal*.mjs
+
+# build verification into its own dir, so it cannot clobber a live dev server
+.next-*
+
+# screenshots from scripts/shoot.mjs, and one-off diagnostics at the root
+.shots
+/*.mjs
