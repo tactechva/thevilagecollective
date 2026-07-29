@@ -23,8 +23,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{
-          duration: reduce ? 0.15 : 0.55,
-          delay: reduce ? 0 : 0.12,
+          duration: reduce ? 0.15 : 0.7,
+          delay: reduce ? 0 : 0.16,
           ease: [0.16, 1, 0.3, 1],
         }}
       >
@@ -47,7 +47,7 @@ function RouteVeil({ reduce }: { reduce: boolean | null }) {
       className="pointer-events-none fixed inset-0 z-[90] bg-paper"
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
       aria-hidden="true"
     />
   );

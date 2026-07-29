@@ -238,27 +238,34 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
               animate="in"
               variants={{
                 rest: {},
-                in: { transition: { staggerChildren: 0.16, delayChildren: 0.34 } },
+                in: { transition: { staggerChildren: 0.21, delayChildren: 0.44 } },
               }}
             >
               <LoadIn>
                 <FormingWreath p={p} />
               </LoadIn>
+
+              {/*
+                The whole headline arrives on LOAD, sweeping left to right, rather
+                than waiting for scroll. Both lines are one word sequence so the
+                sweep carries straight through the line break.
+              */}
               <LoadIn>
                 <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
-                  <span className="block">Every season of life</span>
-                  {/* the second line writes itself word by word as you scroll */}
-                  <FormingLine
-                    p={p}
+                  <SweepLine words={["Every", "season", "of", "life"]} start={0} />
+                  <SweepLine
                     words={["deserves", "a", "village"]}
-                    from={0.006}
-                    to={0.062}
+                    start={4}
                     accentLast
                   />
                 </h1>
               </LoadIn>
+
               <LoadIn>
-                <FormingParagraph p={p} from={0.03} to={0.072} />
+                <p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]">
+                  Thirty-nine local businesses across Hampton Roads, gathered by a woman who
+                  knows exactly who to call.
+                </p>
               </LoadIn>
             </motion.div>
           </motion.div>
@@ -271,7 +278,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
               className="block"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.9, delay: 1.75, ease: [0.16, 1, 0.3, 1] }}
             >
               Keep scrolling. It grows as you go
             </motion.span>
@@ -553,6 +560,47 @@ function SegmentLeaves({
 }
 
 /*
+  The headline sweeping in on load, left to right. Each word carries a small
+  negative x so it drifts in from the left as it resolves, and the delay is keyed
+  to the word's position across BOTH lines, so the sweep reads as one continuous
+  motion through the line break rather than restarting on line two.
+*/
+function SweepLine({
+  words,
+  start,
+  accentLast = false,
+}: {
+  words: string[];
+  start: number;
+  accentLast?: boolean;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <span className="block">
+      {words.map((word, i) => (
+        <motion.span
+          key={`${word}-${i}`}
+          className={`inline-block ${accentLast && i === words.length - 1 ? "text-bell-deep" : ""}`}
+          initial={{
+            opacity: 0,
+            x: reduce ? 0 : -26,
+            filter: reduce ? "blur(0px)" : "blur(6px)",
+          }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          transition={{
+            duration: reduce ? 0.2 : 1.15,
+            delay: reduce ? 0 : (start + i) * 0.11,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          {word}&nbsp;
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+/*
   One beat of the arrival's load-in. Rises and settles once on mount, then never
   animates again, so it cannot interfere with the scroll-driven forming inside it.
 */
@@ -566,7 +614,7 @@ function LoadIn({ children }: { children: React.ReactNode }) {
           opacity: 1,
           y: 0,
           filter: "blur(0px)",
-          transition: { duration: reduce ? 0.2 : 1.05, ease: [0.16, 1, 0.3, 1] },
+          transition: { duration: reduce ? 0.2 : 1.35, ease: [0.16, 1, 0.3, 1] },
         },
       }}
     >
@@ -638,17 +686,6 @@ function FormingWord({
     >
       {word}&nbsp;
     </motion.span>
-  );
-}
-
-function FormingParagraph({ p, from, to }: { p: MotionValue<number>; from: number; to: number }) {
-  const opacity = useTransform(p, [from, to], [0, 1]);
-  const y = useTransform(p, [from, to], [16, 0]);
-  return (
-    <motion.p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]" style={{ opacity, y }}>
-      Thirty-nine local businesses across Hampton Roads, gathered by a woman who knows exactly
-      who to call.
-    </motion.p>
   );
 }
 
