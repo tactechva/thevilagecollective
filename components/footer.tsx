@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES, SEASONS, MEMBERS } from "@/data/members";
+import { CATEGORIES, SEASONS, MEMBERS, VILLAGE_COUNT } from "@/data/members";
 import { Sprig } from "@/components/floral";
 
 export function Footer() {
@@ -63,7 +63,7 @@ export function Footer() {
         </div>
 
         <p className="mt-16 text-[12px] text-ink-faint">
-          {MEMBERS.length} local businesses · Proudly serving Hampton Roads · &copy;{" "}
+          {VILLAGE_COUNT} local businesses · Proudly serving Hampton Roads · &copy;{" "}
           {new Date().getFullYear()} The Village Collective
         </p>
       </div>

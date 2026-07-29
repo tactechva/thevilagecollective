@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { MEMBERS, CATEGORIES } from "@/data/members";
+import { MEMBERS, CATEGORIES, VILLAGE_COUNT } from "@/data/members";
 import { VillageIndex } from "@/components/village-index";
 import { Sprig } from "@/components/floral";
 
 export const metadata: Metadata = {
   title: "The Village",
   description:
-    `All ${MEMBERS.length} trusted local businesses in The Village Collective, serving families across Hampton Roads. Free to browse, nothing sponsored, nothing ranked.`,
+    `All ${VILLAGE_COUNT} trusted local businesses in The Village Collective, serving families across Hampton Roads. Free to browse, nothing sponsored, nothing ranked.`,
 };
 
 export default async function VillagePage({
@@ -23,7 +23,7 @@ export default async function VillagePage({
         <Sprig className="h-6 w-[200px]" />
         <h1 className="display mt-10 text-[clamp(2.2rem,5vw,4rem)]">The Village</h1>
         <p className="prose-warm mt-5 max-w-[46ch]">
-          {MEMBERS.length} people Jessica trusts, across Hampton Roads. Find yours by what you
+          {VILLAGE_COUNT} people Jessica trusts, across Hampton Roads. Find yours by what you
           need or where you are.
         </p>
         <div className="mt-14">

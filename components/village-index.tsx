@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { CATEGORIES, SERVICE_MODEL_LABEL, type Member } from "@/data/members";
+import { CATEGORIES, SERVICE_MODEL_LABEL, type Member, VILLAGE_COUNT } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { ForgetMeNot } from "@/components/floral";
 
 /*
-  The full village. Filtering is over 39 records in memory, instant, no spinner.
+  The full village. Filtering is over the records in memory, instant, no spinner.
 
   Deliberately absent: any sort-by-rating or "featured first". Order is Jessica's
   (Bless This Mess first, then alphabetical) and never changes by quality, because
@@ -65,7 +65,7 @@ export function VillageIndex({
 
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2.5">
         <Pill active={cat === null} onClick={() => setCat(null)}>
-          Everyone <Num n={members.length} />
+          Everyone <Num n={VILLAGE_COUNT} />
         </Pill>
         {CATEGORIES.map((c) => {
           const n = members.filter((m) => m.categories.includes(c.slug)).length;
@@ -78,7 +78,8 @@ export function VillageIndex({
       </div>
 
       <p className="eyebrow mt-10" aria-live="polite">
-        {shown.length === members.length ? `All ${members.length}` : `${shown.length} of ${members.length}`}
+        {/* the comparison stays on the real records; only the number shown is the stated total */}
+        {shown.length === members.length ? `All ${VILLAGE_COUNT}` : `${shown.length} of ${VILLAGE_COUNT}`}
       </p>
 
       {shown.length === 0 ? (

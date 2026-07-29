@@ -168,7 +168,7 @@ export default async function MemberPage({ params }: { params: Promise<{ slug: s
 /*
   Contact actions ordered by what actually reaches this person. 9 members have no
   website and 8 have no phone, so the row adapts instead of rendering dead links.
-  Every one of the 39 has at least one working channel.
+  Every member has at least one working channel.
 */
 function Contact({ member: m }: { member: Member }) {
   const tel = m.phone ? `tel:${m.phone.replace(/[^\d+]/g, "")}` : null;

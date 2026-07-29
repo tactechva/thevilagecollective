@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MEMBERS, SEASONS, CATEGORIES } from "@/data/members";
+import { MEMBERS, SEASONS, CATEGORIES, VILLAGE_COUNT } from "@/data/members";
 import { spellCount } from "@/lib/spell";
 import { FlowerWorld } from "@/components/flower-world";
 import { Sprig, ForgetMeNot } from "@/components/floral";
@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       {/* You travel down through the garden; the seasons bloom as you reach them. */}
-      <FlowerWorld seasons={seasons} total={MEMBERS.length} />
+      <FlowerWorld seasons={seasons} total={VILLAGE_COUNT} />
 
       {/*
         ─────────── Out of the world, onto the page ───────────
@@ -79,7 +79,7 @@ export default function Home() {
                   for a search result. They wanted the names she&rsquo;d give her own family.
                 </p>
                 <p>
-                  Those answers became a list. The list became {spellCount(MEMBERS.length)}{" "}
+                  Those answers became a list. The list became {spellCount(VILLAGE_COUNT)}{" "}
                   businesses across Hampton Roads: an electrician, a doula, a lawyer, a bakery, a
                   dog walker, a glass shop. Free to browse, none of them ranked, every one of them
                   hers.
@@ -166,7 +166,7 @@ export default function Home() {
               href="/village"
               className="group inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors duration-500 hover:text-bell-deep"
             >
-              All {MEMBERS.length}
+              All {VILLAGE_COUNT}
               <span className="transition-transform duration-500 group-hover:translate-x-1">&rarr;</span>
             </Link>
           </div>

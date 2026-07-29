@@ -808,3 +808,13 @@ export const bySlug = (slug: string) => MEMBERS.find((m) => m.slug === slug);
 export const inCategory = (cat: string) => MEMBERS.filter((m) => m.categories.includes(cat));
 export const inSeason = (season: string) => MEMBERS.filter((m) => m.seasons.includes(season));
 export const countIn = (season: string) => inSeason(season).length;
+
+/*
+  The count the copy states.
+
+  Normally this is just MEMBERS.length. It is pinned to 40 while the fortieth
+  business is being added, so every stated count moves together instead of the
+  hero saying one thing and the village page another. Set it back to
+  MEMBERS.length once that record lands.
+*/
+export const VILLAGE_COUNT = 40;

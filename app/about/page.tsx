@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { MEMBERS } from "@/data/members";
+import { MEMBERS, VILLAGE_COUNT } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { Sprig, ForgetMeNot } from "@/components/floral";
 
@@ -35,7 +35,7 @@ export default function AboutPage() {
               {/* fills the column with something factual rather than empty paper */}
               <p className="prose-warm mt-8 max-w-[44ch]">
                 The Village Collective is presented by Bless This Mess Cleaning, and gathers{" "}
-                {MEMBERS.length} trusted local businesses across Hampton Roads. Everything here is
+                {VILLAGE_COUNT} trusted local businesses across Hampton Roads. Everything here is
                 free to browse.
               </p>
               <Link
@@ -96,7 +96,7 @@ export default function AboutPage() {
                 </Link>
               ))}
             </div>
-            <p className="eyebrow mt-6">{MEMBERS.length} businesses &middot; Hampton Roads</p>
+            <p className="eyebrow mt-6">{VILLAGE_COUNT} businesses &middot; Hampton Roads</p>
           </div>
         </div>
       </section>
@@ -237,7 +237,7 @@ export default function AboutPage() {
                   href="/village"
                   className="rounded-full px-6 py-3.5 text-[13px] text-ink-soft ring-1 ring-brass/40 transition-colors duration-500 hover:text-bell-deep hover:ring-bell"
                 >
-                  See all {MEMBERS.length}
+                  See all {VILLAGE_COUNT}
                 </Link>
               </div>
             </div>
