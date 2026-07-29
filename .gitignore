@@ -11,3 +11,4 @@ test-results
 # scratch diagnostics
 look.mjs
 *.scratch.mjs
+cal*.mjs
