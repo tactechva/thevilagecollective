@@ -7,3 +7,7 @@ next-env.d.ts
 .vercel
 .env*
 test-results
+
+# scratch diagnostics
+look.mjs
+*.scratch.mjs
