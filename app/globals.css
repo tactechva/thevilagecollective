@@ -89,13 +89,13 @@ body::before {
     opacity: 0;
   }
   8% {
-    opacity: 0.32;
+    opacity: 0.24;
   }
   50% {
     transform: translate3d(9vw, 55vh, 0) rotate(190deg);
   }
   92% {
-    opacity: 0.32;
+    opacity: 0.24;
   }
   100% {
     transform: translate3d(-4vw, 118vh, 0) rotate(400deg);

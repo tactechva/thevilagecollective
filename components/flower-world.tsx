@@ -45,13 +45,13 @@ const BRASS = "#a89060";
 /* Where each station sits in the field. A wandering path, never a column. */
 const STATIONS: { x: number; y: number; rot: number }[] = [
   { x: 0, y: 0, rot: 0 },
-  { x: 1520, y: 560, rot: -2.5 },
-  { x: 360, y: 1240, rot: 2 },
-  { x: 1880, y: 1860, rot: -1.5 },
-  { x: 620, y: 2600, rot: 2.8 },
-  { x: 2180, y: 3120, rot: -2 },
-  { x: 480, y: 3820, rot: 1.6 },
-  { x: 1760, y: 4460, rot: -2.2 },
+  { x: 1520, y: 190, rot: 0 },
+  { x: 360, y: 1240, rot: 0 },
+  { x: 1880, y: 1860, rot: 0 },
+  { x: 620, y: 2600, rot: 0 },
+  { x: 2180, y: 3120, rot: 0 },
+  { x: 480, y: 3820, rot: 0 },
+  { x: 1760, y: 4460, rot: 0 },
 ];
 
 /*
@@ -87,7 +87,16 @@ const SEGMENTS = STATIONS.slice(0, -1).map((a, i) => {
   const minY = Math.min(a.y, b.y, c1.y, c2.y) - pad;
   const w = Math.max(a.x, b.x, c1.x, c2.x) - minX + pad;
   const h = Math.max(a.y, b.y, c1.y, c2.y) - minY + pad;
-  const d = `M${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
+  /*
+    The opening segment is written BACKWARDS, from b to a. Geometry is identical,
+    but pathLength then grows from the far end, so the branch enters from the
+    right of the screen and sweeps left beneath the arrival instead of crawling
+    away to the right.
+  */
+  const d =
+    i === 0
+      ? `M${b.x} ${b.y} C ${c2.x} ${c2.y}, ${c1.x} ${c1.y}, ${a.x} ${a.y}`
+      : `M${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
   return { i, minX, minY, w, h, d };
 });
 
@@ -133,10 +142,17 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
     title has clean paper, then flies down onto the first bloom.
   */
   const keys: number[] = [0];
-  const xs: number[] = [-STATIONS[0].x + 300];
-  const ys: number[] = [-STATIONS[0].y + 240];
-  const zs: number[] = [1.5];
-  const rs: number[] = [-2];
+  /*
+    The opening frame is composed, not inherited. The first vine segment runs at
+    about 20 degrees, so left unrotated it dives straight off the bottom of the
+    screen and only a stub is visible. Banking the camera by -14 degrees flattens
+    it to a gentle sweep that passes UNDER the arrival block, then unwinds to the
+    station's own angle as you start moving.
+  */
+  const xs: number[] = [-STATIONS[0].x - 597];
+  const ys: number[] = [-STATIONS[0].y + 319];
+  const zs: number[] = [0.88];
+  const rs: number[] = [0];
 
   for (let i = 0; i < n; i++) {
     keys.push(stops[i]);
@@ -153,14 +169,14 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
       xs.push(-((a.x + b.x) / 2 + (i % 2 === 0 ? 190 : -190)));
       ys.push(-((a.y + b.y) / 2));
       zs.push(0.6); /* pull way back between stations, you see the field */
-      rs.push((a.rot + b.rot) / 2 + (i % 2 === 0 ? -3.5 : 3.5));
+      rs.push(0); /* no bank: the camera moves toward things, it never pivots */
     }
   }
   keys.push(1);
   xs.push(-STATIONS[n - 1].x - 240);
   ys.push(-STATIONS[n - 1].y - 380);
   zs.push(1.72);
-  rs.push(rs[rs.length - 1] + 2);
+  rs.push(0);
 
   const camX = useTransform(p, keys, xs);
   const camY = useTransform(p, keys, ys);
@@ -185,12 +201,20 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
     /* 20% more scroll distance than before, so the flight reads slower per gesture */
     <div ref={ref} style={{ height: `${n * 142 + 180}vh` }} className="relative">
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        {/* light on paper, drifting very slightly with the camera */}
+        {/*
+          Light on paper. Masked off at the foot so the world's ground dissolves
+          into the page's own paper instead of ending on a hard horizontal edge:
+          when the sticky stage releases and scrolls away, that edge was a visible
+          seam straight across the frame, which is precisely the stacked-sections
+          read this whole thing exists to avoid.
+        */}
         <motion.div
           className="pointer-events-none absolute inset-0"
           style={{
             background:
               "radial-gradient(115% 80% at 58% 26%, #fbfaf2 0%, #f2f1e6 44%, #e6e5d5 100%)",
+            maskImage: "linear-gradient(to bottom, #000 0%, #000 74%, transparent 99%)",
+            WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 74%, transparent 99%)",
           }}
         />
 
@@ -198,7 +222,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           Ambient petals sit BEHIND the camera layer. Rendered on top they drifted
           across the station text and cost legibility.
         */}
-        <Drift />
+        <Drift p={p} />
 
         {/* ── the camera ────────────────────────────────────────────── */}
         <motion.div
@@ -226,7 +250,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
         </motion.div>
 
         {/* ── arrival, over the world ── */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6">
+        <div className="pointer-events-none absolute inset-0 flex -translate-y-[5vh] flex-col items-center justify-center px-6">
           {/*
             The scroll-driven values stay on the OUTER element. The load-in is a
             separate layer inside it, so the two never fight: the page introduces
@@ -491,9 +515,16 @@ function VineSegment({
   total: number;
   p: MotionValue<number>;
 }) {
-  const from = 0.02 + (seg.i / total) * 0.88;
+  const from = seg.i === 0 ? 0 : 0.02 + (seg.i / total) * 0.88;
   const to = 0.02 + ((seg.i + 1) / total) * 0.88;
-  const draw = useTransform(p, [from, to], [seg.i === 0 ? 0.02 : 0, 1]);
+  /* Nothing is drawn at rest. The arrival is clean paper, type and her mark. */
+  const draw = useTransform(p, [from, to], [0, 1]);
+  /*
+    A round linecap still paints a dot at pathLength 0, which left a stray speck
+    on the arrival. Fade the stroke in over the first fraction of a percent so the
+    cap has nothing to draw until the branch genuinely starts.
+  */
+  const inked = useTransform(draw, [0, 0.004], [0, 1]);
 
   return (
     <svg
@@ -508,18 +539,17 @@ function VineSegment({
         d={seg.d}
         fill="none"
         stroke={SAGE}
-        strokeWidth="20"
-        strokeOpacity="0.1"
+        strokeWidth="12"
         strokeLinecap="round"
-        style={{ pathLength: draw }}
+        style={{ pathLength: draw, opacity: inked, strokeOpacity: 0.09 }}
       />
       <motion.path
         d={seg.d}
         fill="none"
         stroke={SAGE_DEEP}
-        strokeWidth="8"
+        strokeWidth="4.5"
         strokeLinecap="round"
-        style={{ pathLength: draw }}
+        style={{ pathLength: draw, opacity: inked }}
       />
       <SegmentLeaves seg={seg} from={from} to={to} p={p} />
     </svg>
@@ -870,7 +900,14 @@ function Unfurl({
   p: MotionValue<number>;
   f: { x: number; y: number; r: number; sc: number; dark: boolean; at: number };
 }) {
-  const t = useTransform(p, [f.at - 0.035, f.at + 0.02], [0, 1]);
+  /*
+    Clamped so no leaf can be part-open at rest. The first leaf on segment 0 had a
+    window starting at a negative scroll value, so it sat 19% unfurled on the
+    arrival: a stray speck under the headline before anything had grown.
+  */
+  const a0 = Math.max(f.at - 0.035, 0.006);
+  const a1 = Math.max(f.at + 0.02, a0 + 0.012);
+  const t = useTransform(p, [a0, a1], [0, 1]);
   const scale = useTransform(t, (v) => v * f.sc);
   return (
     <motion.g
@@ -884,33 +921,65 @@ function Unfurl({
   );
 }
 
-/* ambient petals drifting across the frame, pure CSS, never scroll-bound */
-function Drift() {
+/*
+  Ambient petals drifting across the frame, pure CSS, never scroll-bound.
+
+  Two masks keep them off the copy. The horizontal one dissolves any petal that
+  wanders into the centre column, where the headline and every station's text
+  live; the vertical one clears the nav band at the top and the scroll hint at
+  the bottom. They are separate nested elements on purpose: one mask each, so
+  this needs no mask-composite. Petals still cross the frame, they just cannot
+  land on a word. The x positions start in the margins so most of each drift is
+  spent where it is actually visible.
+*/
+function Drift({ p }: { p: MotionValue<number> }) {
+  /*
+    The masks below are anchored to the world, but the nav is fixed to the
+    viewport, so once the sticky stage releases and slides up, its unmasked
+    middle passes under the nav and a petal lands next to the links. Fading the
+    whole layer out as the journey ends solves that at the source, and is right
+    anyway: the air stops moving once you have walked out of the garden.
+  */
+  const air = useTransform(p, [0.9, 0.965], [1, 0]);
   const petals = [
-    { l: "8%", d: 0, dur: 26, s: 0.5 },
-    { l: "27%", d: 6, dur: 33, s: 0.34 },
-    { l: "52%", d: 12, dur: 29, s: 0.44 },
-    { l: "71%", d: 3, dur: 37, s: 0.28 },
-    { l: "88%", d: 17, dur: 31, s: 0.4 },
+    { l: "6%", d: 0, dur: 26, s: 0.5 },
+    { l: "17%", d: 6, dur: 33, s: 0.34 },
+    { l: "28%", d: 12, dur: 29, s: 0.4 },
+    { l: "79%", d: 3, dur: 37, s: 0.28 },
+    { l: "92%", d: 17, dur: 31, s: 0.44 },
   ];
+  const acrossTheType =
+    "linear-gradient(to right, #000 0%, #000 17%, transparent 33%, transparent 67%, #000 83%, #000 100%)";
+  const pastTheChrome =
+    "linear-gradient(to bottom, transparent 0%, transparent 9%, #000 16%, #000 87%, transparent 96%)";
+
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {petals.map((p, i) => (
-        <span
-          key={i}
-          className="drift-petal absolute -top-24"
-          style={{
-            left: p.l,
-            animationDelay: `-${p.d}s`,
-            animationDuration: `${p.dur}s`,
-          }}
-        >
-          <svg viewBox="0 0 120 120" style={{ width: 120 * p.s, height: 120 * p.s }}>
-            <Petals />
-          </svg>
-        </span>
-      ))}
-    </div>
+    <motion.div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ opacity: air, maskImage: acrossTheType, WebkitMaskImage: acrossTheType }}
+      aria-hidden="true"
+    >
+      <div
+        className="absolute inset-0"
+        style={{ maskImage: pastTheChrome, WebkitMaskImage: pastTheChrome }}
+      >
+        {petals.map((p, i) => (
+          <span
+            key={i}
+            className="drift-petal absolute -top-24"
+            style={{
+              left: p.l,
+              animationDelay: `-${p.d}s`,
+              animationDuration: `${p.dur}s`,
+            }}
+          >
+            <svg viewBox="0 0 120 120" style={{ width: 120 * p.s, height: 120 * p.s }}>
+              <Petals />
+            </svg>
+          </span>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
