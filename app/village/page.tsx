@@ -6,7 +6,7 @@ import { Sprig } from "@/components/floral";
 export const metadata: Metadata = {
   title: "The Village",
   description:
-    "All 39 trusted local businesses in The Village Collective, serving families across Hampton Roads. Free to browse, nothing sponsored, nothing ranked.",
+    `All ${MEMBERS.length} trusted local businesses in The Village Collective, serving families across Hampton Roads. Free to browse, nothing sponsored, nothing ranked.`,
 };
 
 export default async function VillagePage({

@@ -11,6 +11,7 @@ import {
   cubicBezier,
   type MotionValue,
 } from "motion/react";
+import { spellCount } from "@/lib/spell";
 
 type Season = { slug: string; label: string; blurb: string; count: number };
 
@@ -116,7 +117,7 @@ const SEGMENTS = STATIONS.slice(0, -1).map((a, i) => {
 const textLeftAt = (i: number, n: number) =>
   i === 0 ? true : i === n - 1 ? false : i % 2 === 1;
 
-export function FlowerWorld({ seasons }: { seasons: Season[] }) {
+export function FlowerWorld({ seasons, total }: { seasons: Season[]; total: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const n = Math.min(seasons.length, STATIONS.length);
@@ -304,7 +305,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const hint = useTransform(p, [0, 0.026], [1, 0]);
   const outroOpacity = useTransform(p, [0.955, 0.99], [0, 1]);
 
-  if (reduce) return <StaticSeasons seasons={seasons} />;
+  if (reduce) return <StaticSeasons seasons={seasons} total={total} />;
 
   return (
     /* More scroll per station again, so the camera covers its ground unhurried */
@@ -407,7 +408,8 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
 
               <LoadIn>
                 <p className="prose-warm mx-auto mt-5 max-w-[40ch] text-[15px]">
-                  Thirty-nine local businesses across Hampton Roads, gathered by a woman who
+                  {spellCount(total, true)} local businesses across Hampton Roads,
+                  gathered by a woman who
                   knows exactly who to call.
                 </p>
               </LoadIn>
@@ -445,7 +447,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
               href="/village"
               className="relative mt-9 inline-flex items-center gap-3 rounded-full bg-ink px-8 py-4 text-[13px] tracking-[0.06em] text-paper transition-colors duration-500 hover:bg-bell-deep"
             >
-              Meet all 39 &rarr;
+              Meet all {total} &rarr;
             </Link>
           </div>
         </motion.div>
@@ -1100,7 +1102,7 @@ function Drift({ p }: { p: MotionValue<number> }) {
 }
 
 /* ── reduced-motion / no-JS path: the same content, plainly ── */
-function StaticSeasons({ seasons }: { seasons: Season[] }) {
+function StaticSeasons({ seasons, total }: { seasons: Season[]; total: number }) {
   return (
     <section className="px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-[1180px]">
@@ -1108,7 +1110,8 @@ function StaticSeasons({ seasons }: { seasons: Season[] }) {
           Every season of life deserves a <span className="text-bell-deep">village</span>
         </h1>
         <p className="prose-warm mt-6 max-w-[46ch]">
-          Thirty-nine local businesses across Hampton Roads, gathered by a woman who knows
+          {spellCount(total, true)} local businesses across Hampton Roads, gathered by a
+          woman who knows
           exactly who to call.
         </p>
         <ol className="mt-14 border-t border-brass/20">
