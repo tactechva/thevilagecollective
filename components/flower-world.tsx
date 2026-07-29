@@ -8,6 +8,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  cubicBezier,
   type MotionValue,
 } from "motion/react";
 
@@ -45,13 +46,13 @@ const BRASS = "#a89060";
 /* Where each station sits in the field. A wandering path, never a column. */
 const STATIONS: { x: number; y: number; rot: number }[] = [
   { x: 0, y: 0, rot: 0 },
-  { x: 1520, y: 190, rot: 0 },
-  { x: 360, y: 1240, rot: 0 },
-  { x: 1880, y: 1860, rot: 0 },
-  { x: 620, y: 2600, rot: 0 },
-  { x: 2180, y: 3120, rot: 0 },
-  { x: 480, y: 3820, rot: 0 },
-  { x: 1760, y: 4460, rot: 0 },
+  { x: 1180, y: 150, rot: 0 },
+  { x: 300, y: 1120, rot: 0 },
+  { x: 1400, y: 1860, rot: 0 },
+  { x: 420, y: 2650, rot: 0 },
+  { x: 1520, y: 3370, rot: 0 },
+  { x: 360, y: 4100, rot: 0 },
+  { x: 1300, y: 4820, rot: 0 },
 ];
 
 /*
@@ -100,6 +101,21 @@ const SEGMENTS = STATIONS.slice(0, -1).map((a, i) => {
   return { i, minX, minY, w, h, d };
 });
 
+/*
+  Which side the words sit on.
+
+  The vine runs almost vertically through every interior station: its tangent
+  there is (next - previous), and since y climbs steadily while x zigzags, that
+  works out to between 2 and 15 degrees off vertical. So words placed to either
+  side clear the stroke, and they alternate for rhythm.
+
+  The two ends are the exception. At the first station the vine only leaves, to
+  the right; at the last it only arrives, from the left. Those are pinned to the
+  side the stroke is not on, which costs one repeat at each end of the sequence.
+*/
+const textLeftAt = (i: number, n: number) =>
+  i === 0 ? true : i === n - 1 ? false : i % 2 === 1;
+
 export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -112,9 +128,13 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
     sense of space from the camera's travel instead of from a wide shot.
   */
   const [fit, setFit] = useState(0.8);
+  const [narrow, setNarrow] = useState(false);
+  const [vw, setVw] = useState(1440);
   useEffect(() => {
     const measure = () => {
       const w = window.innerWidth;
+      setNarrow(w < 700);
+      setVw(w);
       setFit(w < 700 ? 0.82 : Math.max(0.7, Math.min(1.15, w / 1500)));
     };
     measure();
@@ -123,66 +143,155 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   }, []);
 
   const { scrollYProgress } = useScroll({ target: ref });
-  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 30, mass: 0.4 });
+  /* softer than it was, so it filters the jitter in a real scroll wheel */
+  const p = useSpring(scrollYProgress, { stiffness: 62, damping: 30, mass: 0.6 });
 
   /*
-    The camera keyframes. Between stations the camera pulls BACK (so you see the
-    field and the vine ahead) and at each station it pushes IN. That in-and-out is
-    what makes it feel like flying rather than sliding.
-  */
-  const intro = 0.1;
-  const outro = 0.94;
-  const stops = Array.from({ length: n }, (_, i) => intro + ((i + 0.5) / n) * (outro - intro));
-  const mids = Array.from({ length: n - 1 }, (_, i) => (stops[i] + stops[i + 1]) / 2);
+    The camera keyframes.
 
-  /* interleave station stops and the mid-points between them */
+    It used to whipsaw: it punched to 1.28 at every station and yanked back to
+    0.6 between them, seven times over, with a ±190px sideways drift that flipped
+    direction on every leg and a final shove to 1.72. Scrolled at any real speed
+    that reads as thrashing rather than flying.
+
+    Now it breathes. The zoom moves between 1.14 and 0.95, the turns arc by 80px,
+    and, most of the difference, the camera actually STOPS at each station and
+    holds while you read, then leaves. Motion between the two is eased out of rest
+    and back into rest, so a leg accelerates, coasts through its midpoint, and
+    settles. No corner anywhere in the path.
+  */
+  /*
+    How far a station's block slides off its own node.
+
+    Centred on the node, the vine ran straight through the middle of the words.
+    Sliding the row by half its width less half the bloom puts the BLOOM on the
+    node instead, which is what it should have been all along: a flower on the
+    stem, with the copy set beside it on clean paper. The camera takes the same
+    offset, so the block stays centred in frame.
+
+    On a phone the block is stacked rather than side by side and is nearly as
+    wide as the screen, so there is no room beside the bloom. There the vine gets
+    its own gutter just outside the block.
+  */
+  const rowW = Math.min(vw * 0.86, 1000);
+  const asideMag = narrow ? rowW / 2 + 36 : rowW / 2 - 62;
+  const asideAt = (i: number) => (textLeftAt(i, n) ? -asideMag : asideMag);
+
+  /*
+    Where the camera sits when it is looking at station i. Note the sideways
+    offset is baked in: the camera frames the BLOCK, not the vine's node.
+  */
+  const camAt = (i: number) => ({ x: -(STATIONS[i].x + asideAt(i)), y: -STATIONS[i].y });
+
+  /*
+    Stops spaced by DISTANCE rather than evenly.
+
+    Evenly spaced, every leg got the same slice of scroll regardless of how far it
+    actually was, and the legs are not equal: because textLeftAt pins both ends of
+    the sequence, the sideways offset does not flip across the first or the last
+    leg, so those two are about 1185px where the rest are about 780px. Same scroll,
+    fifty percent more ground, and the camera lunged on exactly those two.
+
+    Weighting each leg by its own length gives every one of them the same speed.
+  */
+  const first = 0.15; /* where the camera reaches the opening bloom */
+  const last = 0.885; /* and the closing one */
+  const legs = Array.from({ length: n - 1 }, (_, i) => {
+    const a = camAt(i);
+    const b = camAt(i + 1);
+    return Math.hypot(b.x - a.x, b.y - a.y);
+  });
+  const ground = legs.reduce((s, v) => s + v, 0);
+  const stops = [first];
+  for (let i = 0; i < n - 1; i++) stops.push(stops[i] + (legs[i] / ground) * (last - first));
+  const span = (last - first) / (n - 1);
+  /*
+    Only a brief settle at each station. A long hold sounds calmer but does the
+    opposite: it crams the same distance into a shorter window, so the legs have
+    to move faster and the whole thing reads as lurching. Nearly all of the scroll
+    is now spent gliding, which is the calm version of moving.
+  */
+  const dwell = span * 0.09;
+
+
+  /*
+    Deliberately FLAT easings.
+
+    A leg is two segments, station to midpoint and midpoint to station, and these
+    used to be a textbook easeIn and easeOut. That shape starts at zero velocity
+    and spikes to roughly double the average at the midpoint, so every leg was a
+    lunge: the camera sat still, hurled itself at the next flower, and stopped.
+    Measured, its peak was 2.7 camera pixels per pixel of scroll.
+
+    These curves have soft ends (about 0.4x) and a gentle crest (about 1.1x), so a
+    leg runs at close to constant speed and merely tapers where it meets a station.
+    The spring smooths what little step is left.
+  */
+  const leave = cubicBezier(0.4, 0.15, 0.75, 0.72);
+  const settle = cubicBezier(0.25, 0.28, 0.6, 0.85);
+  const both = cubicBezier(0.4, 0.1, 0.6, 0.9);
+  const still = (v: number) => v; /* the dwell: nothing is moving anyway */
+
   /*
     The camera does NOT start centred on station 0, that put the first station
     directly behind the arrival headline. It starts above and left of it, so the
     title has clean paper, then flies down onto the first bloom.
   */
   const keys: number[] = [0];
-  /*
-    The opening frame is composed, not inherited. The first vine segment runs at
-    about 20 degrees, so left unrotated it dives straight off the bottom of the
-    screen and only a stub is visible. Banking the camera by -14 degrees flattens
-    it to a gentle sweep that passes UNDER the arrival block, then unwinds to the
-    station's own angle as you start moving.
-  */
   const xs: number[] = [-STATIONS[0].x - 597];
   const ys: number[] = [-STATIONS[0].y + 319];
-  const zs: number[] = [0.88];
+  const zs: number[] = [0.98];
   const rs: number[] = [0];
+  /*
+    How present the vine is. On a phone a station's block is nearly as wide as
+    the screen, so there is no gutter for the stroke to sit in and it crosses the
+    words wherever you put them. It recedes while you are reading and comes back
+    for the flight, which reads as depth rather than as something switching off.
+    Desktop has the room, so it stays at full there.
+  */
+  const vs: number[] = [1];
+  const eases: ((v: number) => number)[] = [];
 
   for (let i = 0; i < n; i++) {
-    keys.push(stops[i]);
-    xs.push(-STATIONS[i].x);
-    ys.push(-STATIONS[i].y);
-    zs.push(1.28); /* push in close at each station */
-    rs.push(STATIONS[i].rot);
+    /* arrive, and hold: the same position twice, so the camera rests */
+    for (const k of [stops[i] - dwell, stops[i] + dwell]) {
+      keys.push(k);
+      xs.push(camAt(i).x);
+      ys.push(camAt(i).y);
+      zs.push(1.12);
+      rs.push(0);
+      vs.push(narrow ? 0.06 : 1);
+    }
+    eases.push(i === 0 ? both : settle);
+    eases.push(still);
 
     if (i < n - 1) {
       const a = STATIONS[i];
       const b = STATIONS[i + 1];
-      keys.push(mids[i]);
-      /* drift off the straight line so the turn arcs */
-      xs.push(-((a.x + b.x) / 2 + (i % 2 === 0 ? 190 : -190)));
+      keys.push((stops[i] + stops[i + 1]) / 2);
+      /* a gentle bow off the straight line, so the turn arcs rather than corners */
+      xs.push(-((a.x + b.x) / 2 + (i % 2 === 0 ? 80 : -80)));
       ys.push(-((a.y + b.y) / 2));
-      zs.push(0.6); /* pull way back between stations, you see the field */
-      rs.push(0); /* no bank: the camera moves toward things, it never pivots */
+      zs.push(1.04); /* a breath back, not the yank to 0.6 this used to be */
+      rs.push(0);
+      vs.push(1);
+      eases.push(leave);
     }
   }
   keys.push(1);
-  xs.push(-STATIONS[n - 1].x - 240);
-  ys.push(-STATIONS[n - 1].y - 380);
-  zs.push(1.72);
+  xs.push(camAt(n - 1).x - 150);
+  ys.push(camAt(n - 1).y - 380);
+  zs.push(1.24);
   rs.push(0);
+  vs.push(narrow ? 0.06 : 1);
+  eases.push(both);
 
-  const camX = useTransform(p, keys, xs);
-  const camY = useTransform(p, keys, ys);
-  const camZraw = useTransform(p, keys, zs);
+  const camX = useTransform(p, keys, xs, { ease: eases });
+  const camY = useTransform(p, keys, ys, { ease: eases });
+  const camZraw = useTransform(p, keys, zs, { ease: eases });
   const camZ = useTransform(camZraw, (z) => z * fit);
-  const camR = useTransform(p, keys, rs);
+  const camR = useTransform(p, keys, rs, { ease: eases });
+  const vineAlpha = useTransform(p, keys, vs, { ease: eases });
 
 
   /*
@@ -198,8 +307,8 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   if (reduce) return <StaticSeasons seasons={seasons} />;
 
   return (
-    /* 20% more scroll distance than before, so the flight reads slower per gesture */
-    <div ref={ref} style={{ height: `${n * 142 + 180}vh` }} className="relative">
+    /* More scroll per station again, so the camera covers its ground unhurried */
+    <div ref={ref} style={{ height: `${n * 175 + 180}vh` }} className="relative">
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         {/*
           Light on paper. Masked off at the foot so the world's ground dissolves
@@ -231,9 +340,17 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
         >
           <motion.div className="relative" style={{ x: camX, y: camY }}>
             {/* the vine, one small sheet per segment, see SEGMENTS above */}
-            {SEGMENTS.map((seg) => (
-              <VineSegment key={seg.i} seg={seg} total={SEGMENTS.length} p={p} />
-            ))}
+            <motion.div style={{ opacity: vineAlpha }}>
+              {SEGMENTS.slice(0, n - 1).map((seg) => (
+                <VineSegment
+                  key={seg.i}
+                  seg={seg}
+                  from={seg.i === 0 ? 0 : stops[seg.i] - dwell}
+                  to={stops[seg.i + 1] - dwell}
+                  p={p}
+                />
+              ))}
+            </motion.div>
 
             {seasons.slice(0, n).map((s, i) => (
               <Station
@@ -242,6 +359,8 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
                 at={stops[i]}
                 index={i}
                 pos={STATIONS[i]}
+                aside={asideAt(i)}
+                flip={textLeftAt(i, n)}
                 p={p}
                 gate={0.108}
               />
@@ -317,15 +436,6 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           style={{ opacity: outroOpacity }}
         >
           <div className="pointer-events-auto relative text-center">
-            {/* the last station is still fading out under this, so it gets clean ground too */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-24 -inset-y-16"
-              style={{
-                background:
-                  "radial-gradient(64% 58% at 50% 50%, #f2f1e6 0%, #f2f1e6 62%, rgba(242,241,230,0.85) 80%, rgba(242,241,230,0) 100%)",
-              }}
-            />
             <p className="hand relative text-[clamp(2rem,4.4vw,3.4rem)] leading-[1.15]">
               No one should have to
               <br />
@@ -358,6 +468,8 @@ function Station({
   at,
   index,
   pos,
+  aside,
+  flip,
   p,
   gate,
 }: {
@@ -365,6 +477,10 @@ function Station({
   at: number;
   index: number;
   pos: { x: number; y: number; rot: number };
+  /** slides the block off its node so the vine runs beside the words */
+  aside: number;
+  /** true puts the words left of the bloom, see textLeftAt */
+  flip: boolean;
   p: MotionValue<number>;
   /** No station may appear before this point, it is when the arrival title clears. */
   gate: number;
@@ -400,14 +516,13 @@ function Station({
   const scale = useTransform(p, [inAt, Math.max(at, hold + 0.005), gone], [0.88, 1, 1.06]);
   const textX = useTransform(p, [inAt, gone], [64, -64]);
 
-  const flip = index % 2 === 1;
   const words = season.label.split(" ");
 
   return (
     <motion.div
       className="absolute"
       style={{
-        left: pos.x,
+        left: pos.x + aside,
         top: pos.y,
         translateX: "-50%",
         translateY: "-50%",
@@ -438,20 +553,13 @@ function Station({
         </div>
 
         {/*
-          Text always sits on clean ground. The vine wanders through station
-          coordinates by design, so without this the stroke cut straight through
-          the words. A feathered paper scrim (no hard edge, so it never reads as a
-          box) guarantees legibility over any graphic behind it.
+          No scrim behind the words. It was a radial gradient meant to feather out,
+          but its ending shape reached past the box at the vertical midline, so it
+          painted hard left and right edges: a visible panel around every station.
+          The words are kept clear of the vine by moving them (see ASIDE) rather
+          than by putting a lighter rectangle underneath them.
         */}
         <motion.div className="relative z-10 min-w-0 flex-1" style={{ x: textX }}>
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -inset-x-10 -inset-y-8"
-            style={{
-              background:
-                "radial-gradient(70% 60% at 40% 50%, #f2f1e6 0%, #f2f1e6 58%, rgba(242,241,230,0.82) 76%, rgba(242,241,230,0) 100%)",
-            }}
-          />
           <Link href={`/seasons/${season.slug}`} className="group relative block">
             <p className="eyebrow">
               {String(index + 1).padStart(2, "0")} &nbsp;·&nbsp; {season.count} in your village
@@ -508,15 +616,23 @@ function Petals({ r = 1, cx = 60, cy = 60 }: { r?: number; cx?: number; cy?: num
 */
 function VineSegment({
   seg,
-  total,
+  from,
+  to,
   p,
 }: {
   seg: { i: number; minX: number; minY: number; w: number; h: number; d: string };
-  total: number;
+  /*
+    When this length of vine draws. Spaced by the STATIONS rather than evenly
+    across the scroll, which is what they used to be: evenly spaced, the windows
+    drifted out of step with the stops, and by the last one the vine finished 10%
+    short of its own bloom, leaving a cut stub hanging in the field. Each segment
+    now grows over exactly the flight between the two stations it joins, so the
+    path is always complete the moment you arrive.
+  */
+  from: number;
+  to: number;
   p: MotionValue<number>;
 }) {
-  const from = seg.i === 0 ? 0 : 0.02 + (seg.i / total) * 0.88;
-  const to = 0.02 + ((seg.i + 1) / total) * 0.88;
   /* Nothing is drawn at rest. The arrival is clean paper, type and her mark. */
   const draw = useTransform(p, [from, to], [0, 1]);
   /*
