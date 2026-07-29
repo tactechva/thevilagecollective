@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MEMBERS, SEASONS, CATEGORIES } from "@/data/members";
 import { FlowerWorld } from "@/components/flower-world";
 import { Sprig, ForgetMeNot } from "@/components/floral";
@@ -24,28 +25,64 @@ export default function Home() {
       {/* You travel down through the garden; the seasons bloom as you reach them. */}
       <FlowerWorld seasons={seasons} />
 
-      {/* ─────────── Out of the world, onto the page ─────────── */}
+      {/*
+        ─────────── Out of the world, onto the page ───────────
+        Jessica's real photographs, layered rather than dropped in as one
+        full-width rectangle: the van anchors the composition, the working shots
+        overlap it at different depths, and the copy sits beside them.
+      */}
       <section className="px-6 py-24 sm:px-10">
         <div className="mx-auto max-w-[1280px]">
           <Sprig className="h-6 w-[220px]" />
-          <div className="mt-14 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-            <p className="display text-[clamp(1.8rem,3.4vw,2.9rem)] leading-[1.12]">
-              Her clients kept asking the same question.
-            </p>
-            <div className="prose-warm max-w-[58ch] space-y-5">
-              <p>
-                Jessica cleans houses. Routine, deep, move-out. Which means she is inside them,
-                on the good weeks and the hard ones.
+
+          <div className="mt-14 grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+            <div className="relative">
+              <div className="relative aspect-4/3 w-[86%] overflow-hidden ring-1 ring-brass/25">
+                <Image
+                  src="/photos/jess-and-the-tahoe.jpg"
+                  alt="Jessica standing beside the Bless This Mess Cleaning van outside a Hampton Roads home"
+                  fill
+                  sizes="(max-width: 1024px) 88vw, 620px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+
+              {/* offset, overlapping, deliberately not a neat grid */}
+              <div className="absolute right-0 bottom-[-2.5rem] aspect-3/4 w-[38%] overflow-hidden ring-1 ring-brass/25 sm:w-[32%]">
+                <Image
+                  src="/photos/cleaning-a-vent.jpg"
+                  alt="Jessica cleaning a ceiling vent during a deep clean"
+                  fill
+                  sizes="(max-width: 1024px) 34vw, 220px"
+                  className="object-cover"
+                />
+              </div>
+
+              <p className="eyebrow absolute bottom-[-4.5rem] left-0">
+                Bless This Mess Cleaning · Hampton Roads
               </p>
-              <p>
-                <strong>&ldquo;Who do you trust?&rdquo;</strong> Families weren&rsquo;t looking for
-                a search result. They wanted the names she&rsquo;d give her own family.
+            </div>
+
+            <div className="pt-16 lg:pt-0">
+              <p className="display text-[clamp(1.8rem,3.4vw,2.9rem)] leading-[1.12]">
+                Her clients kept asking the same question.
               </p>
-              <p>
-                Those answers became a list. The list became thirty-nine businesses across
-                Hampton Roads: an electrician, a doula, a lawyer, a bakery, a dog walker, a
-                glass shop. Free to browse, none of them ranked, every one of them hers.
-              </p>
+              <div className="prose-warm mt-8 max-w-[54ch] space-y-5">
+                <p>
+                  Jessica cleans houses. Routine, deep, move-out. Which means she is inside them,
+                  on the good weeks and the hard ones.
+                </p>
+                <p>
+                  <strong>&ldquo;Who do you trust?&rdquo;</strong> Families weren&rsquo;t looking
+                  for a search result. They wanted the names she&rsquo;d give her own family.
+                </p>
+                <p>
+                  Those answers became a list. The list became thirty-nine businesses across
+                  Hampton Roads: an electrician, a doula, a lawyer, a bakery, a dog walker, a
+                  glass shop. Free to browse, none of them ranked, every one of them hers.
+                </p>
+              </div>
             </div>
           </div>
         </div>

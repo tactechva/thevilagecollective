@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { MEMBERS } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { Sprig, ForgetMeNot } from "@/components/floral";
@@ -20,9 +21,47 @@ export default function AboutPage() {
       <section className="px-6 pt-32 pb-16 sm:px-10 sm:pt-40">
         <div className="mx-auto max-w-[1180px]">
           <Sprig className="h-6 w-[200px]" />
-          <h1 className="display mt-10 max-w-[22ch] text-[clamp(2.3rem,5.4vw,4.4rem)] leading-[1.02]">
-            Building more than a cleaning company
-          </h1>
+
+          {/*
+            Top-aligned. Bottom-aligning the headline against a tall portrait left
+            a screen-height void on the left, which is exactly the empty-for-effect
+            whitespace this design should not have.
+          */}
+          <div className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+            <div>
+              <h1 className="display max-w-[18ch] text-[clamp(2.3rem,5vw,4rem)] leading-[1.02]">
+                Building more than a cleaning company
+              </h1>
+              {/* fills the column with something factual rather than empty paper */}
+              <p className="prose-warm mt-8 max-w-[44ch]">
+                The Village Collective is presented by Bless This Mess Cleaning, and gathers{" "}
+                {MEMBERS.length} trusted local businesses across Hampton Roads. Everything here is
+                free to browse.
+              </p>
+              <Link
+                href="/village"
+                className="mt-8 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors duration-500 hover:text-bell-deep"
+              >
+                Meet the village
+                <span aria-hidden="true">&rarr;</span>
+              </Link>
+            </div>
+
+            {/* her own photograph, not a stock portrait */}
+            <figure className="lg:mt-3">
+              <div className="relative ml-auto aspect-4/5 w-full max-w-[330px] overflow-hidden ring-1 ring-brass/25">
+                <Image
+                  src="/photos/jess-portrait.jpg"
+                  alt="Jessica, founder of The Village Collective and Bless This Mess Cleaning"
+                  fill
+                  sizes="(max-width: 1024px) 88vw, 330px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <figcaption className="eyebrow mt-3 text-right">Jess · Founder</figcaption>
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -87,6 +126,19 @@ export default function AboutPage() {
             </p>
           </div>
         </div>
+
+        <figure className="mx-auto mt-16 max-w-[1180px]">
+          <div className="relative aspect-16/9 w-full overflow-hidden ring-1 ring-brass/25">
+            <Image
+              src="/photos/team-on-the-beach.jpg"
+              alt="Jessica with her team on the beach in Hampton Roads"
+              fill
+              sizes="(max-width: 1180px) 92vw, 1180px"
+              className="object-cover"
+            />
+          </div>
+          <figcaption className="eyebrow mt-3">The team · Hampton Roads</figcaption>
+        </figure>
       </section>
 
       <section className="px-6 py-16 sm:px-10 sm:py-24">
@@ -126,6 +178,28 @@ export default function AboutPage() {
                 <br />
                 Jess
               </p>
+
+              {/* the boys, the dog, the team: the life the letter describes */}
+              <div className="mt-12 grid grid-cols-3 gap-3">
+                {[
+                  ["/photos/jess-and-her-son.jpg", "Jessica and one of her three boys"],
+                  ["/photos/jess-and-the-dog.jpg", "Jessica outside with her dog"],
+                  ["/photos/team-mirror.jpg", "Jessica and Kate mid-clean, caught in a mirror"],
+                ].map(([src, alt]) => (
+                  <div
+                    key={src}
+                    className="relative aspect-square overflow-hidden ring-1 ring-brass/25"
+                  >
+                    <Image
+                      src={src}
+                      alt={alt}
+                      fill
+                      sizes="(max-width: 640px) 30vw, 180px"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="lg:pt-16">
