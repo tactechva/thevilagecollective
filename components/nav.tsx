@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { ForgetMeNot } from "@/components/floral";
 
 const LINKS = [
@@ -18,6 +18,18 @@ const LINKS = [
 */
 export function Nav() {
   const [open, setOpen] = useState(false);
+
+  /*
+    The small mark belongs to the NAV, not to the scroll world. It used to be
+    absolutely positioned against the viewport edge while the wordmark sits inside
+    a centred 1280px container, so the two never lined up, and it carried a
+    scroll-driven rotation that made it swing. It now sits inline beside the
+    wordmark: same container, same baseline, no rotation, always square.
+  */
+  const { scrollY } = useScroll();
+  const markOpacity = useTransform(scrollY, [120, 420], [0, 1]);
+  const markWidth = useTransform(scrollY, [120, 420], ["0rem", "2.25rem"]);
+  const markGap = useTransform(scrollY, [120, 420], ["0rem", "0.625rem"]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -36,11 +48,25 @@ export function Nav() {
     <>
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
         <div className="pointer-events-auto mx-auto flex max-w-[1280px] items-center justify-between px-6 py-6 sm:px-10">
-          <Link href="/" className="group flex items-baseline gap-2.5">
-            <span className="display text-[19px] tracking-[0.02em] sm:text-[21px]">
+          <Link href="/" className="group flex items-center">
+            {/* fades and widens in as you leave the arrival, then stays put */}
+            <motion.span
+              className="block shrink-0 overflow-hidden"
+              style={{ opacity: markOpacity, width: markWidth, marginRight: markGap }}
+              aria-hidden="true"
+            >
+              <img
+                src="/tvc-mark-keyed.png"
+                alt=""
+                width={744}
+                height={675}
+                className="h-9 w-9 max-w-none object-contain"
+              />
+            </motion.span>
+            <span className="display text-[19px] leading-none tracking-[0.02em] sm:text-[21px]">
               The Village Collective
             </span>
-            <span className="hidden h-1.5 w-1.5 rounded-full bg-brass/60 transition-colors duration-500 group-hover:bg-bell sm:block" />
+            <span className="ml-2.5 hidden h-1.5 w-1.5 shrink-0 rounded-full bg-brass/60 transition-colors duration-500 group-hover:bg-bell sm:block" />
           </Link>
 
           <nav className="hidden items-center gap-9 md:flex">

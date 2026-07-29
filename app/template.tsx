@@ -35,43 +35,20 @@ export default function Template({ children }: { children: React.ReactNode }) {
 }
 
 /*
-  A sheet of paper that lifts off the new page, with a sprig of forget-me-nots
-  going with it. Fixed and pointer-events-none, so it never blocks a tap even
-  mid-flight.
+  A sheet of paper that lifts off the new page. Nothing rides on it: an earlier
+  version put a forget-me-not in the middle, which read as a flower flashing dead
+  centre of the screen on every load. Just the paper now.
 */
 function RouteVeil({ reduce }: { reduce: boolean | null }) {
   if (reduce) return null;
 
   return (
     <motion.div
-      className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center bg-paper"
+      className="pointer-events-none fixed inset-0 z-[90] bg-paper"
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
       aria-hidden="true"
-    >
-      <motion.svg
-        viewBox="0 0 120 120"
-        width="54"
-        height="54"
-        initial={{ scale: 0.7, opacity: 0 }}
-        animate={{ scale: 1, opacity: [0, 1, 0] }}
-        transition={{ duration: 0.62, times: [0, 0.4, 1], ease: [0.16, 1, 0.3, 1] }}
-      >
-        {[0, 72, 144, 216, 288].map((deg, j) => (
-          <ellipse
-            key={deg}
-            cx="60"
-            cy="34"
-            rx="18"
-            ry="23"
-            fill={j % 2 === 0 ? "#6090c0" : "#3e6fa6"}
-            fillOpacity={j % 2 === 0 ? 0.95 : 0.8}
-            transform={`rotate(${deg} 60 60)`}
-          />
-        ))}
-        <circle cx="60" cy="60" r="9" fill="#e8c55a" />
-      </motion.svg>
-    </motion.div>
+    />
   );
 }

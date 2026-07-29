@@ -277,8 +277,6 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
           </motion.p>
         </div>
 
-        {/* The intro's wreath is not thrown away: it shrinks, docks, and stays. */}
-        <DockedMark p={p} />
 
         {/* ── the last thing you see ── */}
         <motion.div
@@ -790,25 +788,6 @@ function FormingWreath({ p }: { p: MotionValue<number> }) {
         style={{ opacity: markOpacity, scale: markScale }}
       />
     </div>
-  );
-}
-
-/*
-  The intro is not discarded. As the headline lifts away the wreath shrinks and
-  docks in the corner, and stays with you for the whole flight, turning slowly.
-*/
-function DockedMark({ p }: { p: MotionValue<number> }) {
-  const opacity = useTransform(p, [0.075, 0.115, 0.95, 0.985], [0, 1, 1, 0]);
-  const scale = useTransform(p, [0.075, 0.115], [0.45, 1]);
-  const rotate = useTransform(p, [0.115, 1], [-10, 10]);
-  return (
-    <motion.div
-      className="pointer-events-none absolute top-[68px] left-6 h-11 w-11 sm:left-10 sm:h-14 sm:w-14"
-      style={{ opacity, scale, rotate }}
-      aria-hidden="true"
-    >
-      <img src="/tvc-mark-keyed.png" alt="" className="h-full w-full object-contain" />
-    </motion.div>
   );
 }
 
