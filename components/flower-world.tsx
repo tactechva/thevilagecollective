@@ -242,7 +242,7 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
               }}
             >
               <LoadIn>
-                <FormingWreath p={p} />
+                <FormingWreath />
               </LoadIn>
 
               {/*
@@ -252,11 +252,12 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
               */}
               <LoadIn>
                 <h1 className="display mt-6 text-[clamp(2.2rem,5.4vw,4.4rem)] leading-[1.02]">
-                  <SweepLine words={["Every", "season", "of", "life"]} start={0} />
-                  <SweepLine
-                    words={["deserves", "a", "village"]}
-                    start={4}
-                    accentLast
+                  <SweepHeadline
+                    lines={[
+                      ["Every", "season", "of", "life"],
+                      ["deserves", "a", "village"],
+                    ]}
+                    accentLastWord
                   />
                 </h1>
               </LoadIn>
@@ -565,38 +566,68 @@ function SegmentLeaves({
   to the word's position across BOTH lines, so the sweep reads as one continuous
   motion through the line break rather than restarting on line two.
 */
-function SweepLine({
-  words,
-  start,
-  accentLast = false,
+function SweepHeadline({
+  lines,
+  accentLastWord = false,
 }: {
-  words: string[];
-  start: number;
-  accentLast?: boolean;
+  lines: string[][];
+  accentLastWord?: boolean;
 }) {
   const reduce = useReducedMotion();
+  /*
+    A single running letter counter across every word and both lines, so the
+    spell-out never restarts at a word or a line break. Each word stays an
+    inline-block so it can never break mid-word when the line wraps; the letters
+    inside it are the things that animate.
+  */
+  const lastLine = lines.length - 1;
+  let n = 0;
+  const plan = lines.map((words, li) =>
+    words.map((word, wi) => {
+      const letters = [...word].map((ch) => ({ ch, delay: n++ * 0.045 }));
+      n += 1; /* the space between words costs a beat too, so the rhythm stays even */
+      return {
+        letters,
+        space: wi < words.length - 1,
+        accent: accentLastWord && li === lastLine && wi === words.length - 1,
+      };
+    }),
+  );
+
   return (
-    <span className="block">
-      {words.map((word, i) => (
-        <motion.span
-          key={`${word}-${i}`}
-          className={`inline-block ${accentLast && i === words.length - 1 ? "text-bell-deep" : ""}`}
-          initial={{
-            opacity: 0,
-            x: reduce ? 0 : -26,
-            filter: reduce ? "blur(0px)" : "blur(6px)",
-          }}
-          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-          transition={{
-            duration: reduce ? 0.2 : 1.15,
-            delay: reduce ? 0 : (start + i) * 0.11,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-        >
-          {word}&nbsp;
-        </motion.span>
+    <>
+      {plan.map((words, li) => (
+        <span className="block" key={li}>
+          {words.map((w, wi) => (
+            <span
+              key={wi}
+              className={`inline-block whitespace-nowrap ${w.accent ? "text-bell-deep" : ""}`}
+            >
+              {w.letters.map(({ ch, delay }, ci) => (
+                <motion.span
+                  key={ci}
+                  className="inline-block"
+                  initial={{
+                    opacity: 0,
+                    y: reduce ? 0 : "0.24em",
+                    filter: reduce ? "blur(0px)" : "blur(5px)",
+                  }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{
+                    duration: reduce ? 0.2 : 0.72,
+                    delay: reduce ? 0 : delay,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {ch}
+                </motion.span>
+              ))}
+              {w.space && <span className="inline-block">&nbsp;</span>}
+            </span>
+          ))}
+        </span>
       ))}
-    </span>
+    </>
   );
 }
 
@@ -785,19 +816,14 @@ function ScrollPetal({
 }
 
 /*
-  The wreath ASSEMBLES under the scroll. At rest you get the first stroke of the
-  brass arc and nothing else, her mark rises into it, then the forget-me-nots
-  open at its base, one petal at a time. Scroll back up and it un-builds.
+  The mark on arrival. It loads FULLY: it used to sit at 42% opacity until you
+  scrolled, which read as a washed-out logo beside crisp type rather than as
+  something deliberately unformed. Her artwork is solid the moment it lands. The
+  brass arc and the blooms still build, but on load, in step with the headline.
 */
-function FormingWreath({ p }: { p: MotionValue<number> }) {
-  /*
-    Partly formed at rest, completed by you. A fully unformed arrival read as a
-    broken empty page; a fully formed one is the pre-animated thing we are avoiding.
-    So the arc starts ~40% drawn and her mark is already faintly present.
-  */
-  const arc = useTransform(p, [0, 0.05], [0.4, 1]);
-  const markOpacity = useTransform(p, [0, 0.042], [0.42, 1]);
-  const markScale = useTransform(p, [0, 0.042], [0.955, 1]);
+function FormingWreath() {
+  const reduce = useReducedMotion();
+  const ease = [0.16, 1, 0.3, 1] as const;
 
   return (
     <div className="relative mx-auto h-[min(56vw,290px)] w-[min(56vw,290px)]">
@@ -812,15 +838,15 @@ function FormingWreath({ p }: { p: MotionValue<number> }) {
           stroke={BRASS}
           strokeWidth="1.5"
           strokeOpacity="0.6"
-          style={{ pathLength: arc }}
+          initial={{ pathLength: reduce ? 1 : 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: reduce ? 0 : 2.1, ease }}
         />
-        {[
-          { cx: 224, cy: 242, r: 0.82, at: 0.04 },
-          { cx: 262, cy: 218, r: 0.56, at: 0.05 },
-          { cx: 200, cy: 272, r: 0.46, at: 0.06 },
-        ].map((b, i) => (
-          <ScrollBloom key={i} p={p} cx={b.cx} cy={b.cy} r={b.r} from={b.at} to={b.at + 0.026} />
-        ))}
+        {/*
+          No added blooms here. Her mark already carries its own forget-me-nots,
+          and drawing three more over them piled into a blue blob at the base.
+          The arc is the only thing we author around her artwork.
+        */}
       </svg>
       <motion.img
         src="/tvc-mark-keyed.png"
@@ -828,7 +854,9 @@ function FormingWreath({ p }: { p: MotionValue<number> }) {
         width={744}
         height={675}
         className="absolute inset-0 m-auto block h-auto w-[84%]"
-        style={{ opacity: markOpacity, scale: markScale }}
+        initial={{ opacity: 0, scale: reduce ? 1 : 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: reduce ? 0.2 : 1.2, delay: reduce ? 0 : 0.1, ease }}
       />
     </div>
   );
