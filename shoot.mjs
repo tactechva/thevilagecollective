@@ -14,7 +14,12 @@ pg.on('pageerror', e => errors.push('PAGEERROR ' + e.message));
 await pg.goto('http://localhost:4311/', { waitUntil: 'networkidle' });
 await pg.waitForTimeout(1200);
 
-const worldH = await pg.evaluate(() => document.querySelector('main > div').offsetHeight);
+// the scroll world is the sticky element's parent, NOT main's first child —
+// template.tsx now renders a fixed route veil first, which is viewport-height.
+const worldH = await pg.evaluate(() => {
+  const sticky = document.querySelector('main .sticky');
+  return (sticky?.parentElement ?? document.querySelector('main > div')).offsetHeight;
+});
 const max = worldH - H;
 
 // smooth-scroll in real increments so Motion's scroll listener fires naturally
@@ -57,8 +62,18 @@ for (const [name, frac] of marks) {
       const on = r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight;
       return { t: a.querySelector('h2')?.textContent.trim().slice(0, 20) || '?', op: +op.toFixed(2), on };
     }).filter(Boolean).filter(s => s.op > 0.25 && s.on);
+    // cumulative opacity up the ancestor chain — the h1's direct parent is the
+    // load-in wrapper, which always sits at 1, so reading it alone lies.
     const h1 = document.querySelector('h1');
-    return { onScreen: vis, titleOp: h1 ? +getComputedStyle(h1.parentElement).opacity : null };
+    let op = null;
+    if (h1) {
+      op = 1;
+      for (let el = h1; el && el !== document.body; el = el.parentElement) {
+        op *= +getComputedStyle(el).opacity;
+      }
+      op = +op.toFixed(2);
+    }
+    return { onScreen: vis, titleOp: op };
   });
   report.push({ name, frac, ...info });
 }

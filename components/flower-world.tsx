@@ -182,7 +182,8 @@ export function FlowerWorld({ seasons }: { seasons: Season[] }) {
   if (reduce) return <StaticSeasons seasons={seasons} />;
 
   return (
-    <div ref={ref} style={{ height: `${n * 118 + 150}vh` }} className="relative">
+    /* 20% more scroll distance than before, so the flight reads slower per gesture */
+    <div ref={ref} style={{ height: `${n * 142 + 180}vh` }} className="relative">
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         {/* light on paper, drifting very slightly with the camera */}
         <motion.div
@@ -348,15 +349,20 @@ function Station({
     `at - w*0.45` (0.1075), which is an invalid useTransform range, Motion
     returned opacity 1 and the first station was fully visible at scroll zero.
   */
-  const hold = Math.max(at - w * 0.45, inAt + 0.01);
+  /*
+    The full-opacity dwell at a station is 30% longer than it was: hold opens
+    earlier and fade starts later, so a card sits legible for noticeably longer
+    before the camera carries you on.
+  */
+  const hold = Math.max(at - w * 0.585, inAt + 0.01);
   /*
     The outgoing tail is short on purpose. With a long tail a station sat at ~0.95
     opacity while the camera had already carried it half off the frame edge, so you
     saw a headline sliced down the middle. It now recedes quickly once you leave,
     while still overlapping the next one enough to dissolve rather than cut.
   */
-  const fade = Math.max(at + w * 0.22, hold + 0.01);
-  const gone = Math.max(at + w * 0.85, fade + 0.02);
+  const fade = Math.max(at + w * 0.286, hold + 0.01);
+  const gone = Math.max(at + w * 0.95, fade + 0.02);
 
   const opacity = useTransform(p, [inAt, hold, fade, gone], [0, 1, 1, 0.05]);
   const scale = useTransform(p, [inAt, Math.max(at, hold + 0.005), gone], [0.88, 1, 1.06]);
