@@ -377,3 +377,90 @@ export function Sprig({ className }: { className?: string }) {
     </motion.svg>
   );
 }
+
+/*
+  The flourish that opens under a nav link on hover.
+
+  Same vocabulary as Sprig, scaled right down: a shallow arch, a leaf either side,
+  a forget-me-not at each end. The arch is two mirrored halves that both START at
+  the centre, so on hover it grows outward from under the middle of the word and
+  the two flowers arrive together, rather than sweeping across in one direction.
+
+  Pure CSS, driven by the link's `group` hover. No per-link React state for
+  something the browser can do on its own, and it costs nothing when idle.
+
+  Fixed size on purpose. Stretching it to each link's width would make the
+  flourish under "Jess" a different shape from the one under "The Village", and
+  stretching an SVG of flowers distorts the flowers. A decorative mark of one
+  consistent size, centred, reads as deliberate.
+*/
+export function NavSprig() {
+  /* one half of the arch, and its mirror; ~34 units long, hence the dash values */
+  const half = (dir: 1 | -1) =>
+    `M38 4.5 C ${38 + 12 * dir} 4.5, ${38 + 20 * dir} 7.5, ${38 + 30 * dir} 11`;
+
+  const leaf = (x: number, y: number, dir: 1 | -1) =>
+    `M${x} ${y} c ${3.4 * dir} ${-2.6 * dir}, ${6.8 * dir} ${-0.8 * dir}, ${6.4 * dir} ${2.1 * dir}` +
+    ` c ${-3.4 * dir} ${1.3 * dir}, ${-6 * dir} ${0.4 * dir}, ${-6.4 * dir} ${-2.1 * dir} Z`;
+
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute -bottom-3.5 left-1/2 -translate-x-1/2"
+    >
+      <svg width="76" height="16" viewBox="0 0 76 16" className="overflow-visible">
+        {([1, -1] as const).map((dir) => (
+          <path
+            key={dir}
+            d={half(dir)}
+            fill="none"
+            stroke={SAGE}
+            strokeWidth="1"
+            strokeLinecap="round"
+            className="[stroke-dasharray:34] [stroke-dashoffset:34] transition-[stroke-dashoffset] duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:[stroke-dashoffset:0]"
+          />
+        ))}
+
+        {/* a leaf on each side, opening just behind the branch that carries it */}
+        {(
+          [
+            [26, 6.2, -1],
+            [50, 6.2, 1],
+          ] as const
+        ).map(([x, y, dir]) => (
+          <path
+            key={x}
+            d={leaf(x, y, dir)}
+            fill={SAGE}
+            fillOpacity="0.85"
+            className="scale-0 transition-transform delay-[180ms] duration-[420ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
+            style={{ transformBox: "view-box", transformOrigin: `${x}px ${y}px` }}
+          />
+        ))}
+
+        {/* and the two blooms the branch is reaching towards */}
+        {([8, 68] as const).map((cx) => (
+          <g
+            key={cx}
+            className="scale-0 transition-transform delay-[300ms] duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
+            style={{ transformBox: "view-box", transformOrigin: `${cx}px 11px` }}
+          >
+            {[0, 72, 144, 216, 288].map((deg) => (
+              <ellipse
+                key={deg}
+                cx={cx}
+                cy="8.4"
+                rx="2.1"
+                ry="2.7"
+                fill={BLUE}
+                fillOpacity="0.9"
+                transform={`rotate(${deg} ${cx} 11)`}
+              />
+            ))}
+            <circle cx={cx} cy="11" r="1.2" fill={GOLD} />
+          </g>
+        ))}
+      </svg>
+    </span>
+  );
+}

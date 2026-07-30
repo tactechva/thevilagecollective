@@ -11,7 +11,7 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
-import { ForgetMeNot } from "@/components/floral";
+import { ForgetMeNot, NavSprig } from "@/components/floral";
 
 const LINKS = [
   { href: "/village", label: "The Village" },
@@ -172,10 +172,13 @@ export function Nav() {
                 aria-current={here === l.href ? "page" : undefined}
                 className="group relative flex items-center gap-2 text-[13.5px] text-ink-soft transition-colors duration-500 hover:text-ink aria-[current=page]:text-ink"
               >
-                <span className="absolute -left-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                  <ForgetMeNot size={10} />
-                </span>
                 {l.label}
+                {/*
+                  Replaces the single flower that used to sit to the left. The
+                  flourish carries two of its own, and three blooms on one nav
+                  item was more decoration than a nav item can hold.
+                */}
+                <NavSprig />
               </Link>
             ))}
           </nav>
