@@ -91,6 +91,31 @@ export function Nav() {
   useEffect(() => setOpen(false), [here]);
 
   return (
+    <>
+      {/*
+        The page, put out of focus behind the open menu.
+
+        Sits at z-40, under the bar and the panel at z-50, so those two stay sharp
+        while everything beneath them softens. It is a button, not a div: tapping
+        away from a menu is the most natural way to dismiss it, and this way that
+        also works from the keyboard. The page keeps scrolling, as before, which is
+        the other way out.
+      */}
+      <AnimatePresence>
+        {open && (
+          <motion.button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+            className="fixed inset-0 z-40 bg-paper/35 backdrop-blur-[7px] md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduce ? 0.15 : 0.44, ease: [0.16, 1, 0.3, 1] }}
+          />
+        )}
+      </AnimatePresence>
+
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
       {/*
         Settles down from above on load, a beat before the wreath, so the page
@@ -217,7 +242,7 @@ export function Nav() {
             {open && (
               <motion.div
                 id="nav-menu"
-                className="absolute top-full right-6 left-6 origin-top border-b border-brass/25 bg-[#f8f7ee] shadow-[0_18px_40px_-28px_rgba(60,56,40,0.45)] sm:right-10 sm:left-10 md:hidden"
+                className="absolute top-full right-6 left-6 origin-top bg-[#f8f7ee] ring-1 ring-brass/20 shadow-[0_26px_60px_-24px_rgba(60,56,40,0.42)] sm:right-10 sm:left-10 md:hidden"
                 initial={{ opacity: 0, y: reduce ? 0 : -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: reduce ? 0 : -10 }}
@@ -241,7 +266,7 @@ export function Nav() {
                       aria-current={here === l.href ? "page" : undefined}
                       className="display flex w-full items-center gap-3 px-5 py-4 text-[26px] leading-none"
                     >
-                      <ForgetMeNot size={14} delay={reduce ? 0 : 0.18 + i * 0.06} />
+                      <ForgetMeNot size={19} delay={reduce ? 0 : 0.18 + i * 0.06} />
                       {l.label}
                     </Link>
                   </motion.div>
@@ -252,5 +277,6 @@ export function Nav() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

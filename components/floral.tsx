@@ -52,7 +52,6 @@ export function ForgetMeNot({
           ry="8.2"
           fill={i % 2 === 0 ? BLUE : BLUE_DEEP}
           fillOpacity={i % 2 === 0 ? 0.95 : 0.82}
-          transform={`rotate(${deg} 20 20)`}
           initial={{ scale: reduce ? 1 : 0.35, opacity: reduce ? 1 : 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true, margin: "-40px" }}
@@ -61,7 +60,17 @@ export function ForgetMeNot({
             duration: 0.7,
             ease: [0.16, 1, 0.3, 1],
           }}
-          style={{ transformOrigin: "20px 20px" }}
+          /*
+            The rotation has to live HERE, in the composed transform, not in a
+            `transform` attribute on the element. Motion writes the animated scale
+            into the CSS transform property, and in SVG that property overrides the
+            presentation attribute outright, so a `transform="rotate(...)"` was
+            being thrown away: all five petals rendered unrotated and stacked on
+            top of each other, which is why every forget-me-not on the site was a
+            blue blob with a gold dot rather than a flower. transformBox makes the
+            origin below mean viewBox units.
+          */
+          style={{ rotate: deg, transformBox: "view-box", transformOrigin: "20px 20px" }}
         />
       ))}
       <circle cx="20" cy="20" r="3.6" fill={GOLD} />
@@ -406,16 +415,21 @@ export function NavSprig() {
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute -bottom-3.5 left-1/2 -translate-x-1/2"
+      className="pointer-events-none absolute -bottom-3 left-1/2 -translate-x-1/2"
     >
-      <svg width="76" height="16" viewBox="0 0 76 16" className="overflow-visible">
+      {/*
+        Rendered smaller than its viewBox: the geometry below stays in 76x16 units,
+        which keeps the dash lengths and leaf maths readable, while the mark itself
+        draws at 58px. Uniform scale, so nothing distorts.
+      */}
+      <svg width="58" height="12.2" viewBox="0 0 76 16" className="overflow-visible">
         {([1, -1] as const).map((dir) => (
           <path
             key={dir}
             d={half(dir)}
             fill="none"
             stroke={SAGE}
-            strokeWidth="1"
+            strokeWidth="1.2"
             strokeLinecap="round"
             className="[stroke-dasharray:34] [stroke-dashoffset:34] transition-[stroke-dashoffset] duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:[stroke-dashoffset:0]"
           />
