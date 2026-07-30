@@ -24,7 +24,9 @@ export default function AboutPage() {
     <>
       <section className="px-6 pt-32 pb-16 sm:px-10 sm:pt-40">
         <div className="mx-auto max-w-[1180px]">
-          <Sprig className="h-6 w-[200px]" />
+          <Reveal>
+            <Sprig className="h-6 w-[200px]" />
+          </Reveal>
 
           {/*
             Top-aligned. Bottom-aligning the headline against a tall portrait left
@@ -32,7 +34,7 @@ export default function AboutPage() {
             whitespace this design should not have.
           */}
           <div className="mt-8 grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
-            <div>
+            <Reveal>
               <h1 className="display max-w-[18ch] text-[clamp(2.3rem,5vw,4rem)] leading-[1.02]">
                 Building more than a cleaning company
               </h1>
@@ -49,10 +51,11 @@ export default function AboutPage() {
                 Meet the village
                 <span aria-hidden="true">&rarr;</span>
               </Link>
-            </div>
+            </Reveal>
 
             {/* her own photograph, not a stock portrait */}
-            <figure className="lg:mt-3">
+            <Reveal delay={0.16}>
+              <figure className="lg:mt-3">
               <div className="relative ml-auto aspect-4/5 w-full max-w-[330px] overflow-hidden ring-1 ring-brass/25">
                 <Image
                   src="/photos/jess-portrait.jpg"
@@ -63,8 +66,9 @@ export default function AboutPage() {
                   priority
                 />
               </div>
-              <figcaption className="eyebrow mt-3 text-right">Jess · Founder</figcaption>
-            </figure>
+                <figcaption className="eyebrow mt-3 text-right">Jess · Founder</figcaption>
+              </figure>
+            </Reveal>
           </div>
         </div>
       </section>

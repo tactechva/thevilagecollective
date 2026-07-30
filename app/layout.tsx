@@ -61,6 +61,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${display.variable} ${sans.variable} ${hand.variable}`}
     >
+      <head>
+        {/* the reveals are hidden by CSS and unhidden by JS; without JS, undo it */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
+      </head>
       <body>
         <Nav />
         <main>{children}</main>

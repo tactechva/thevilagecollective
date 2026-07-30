@@ -128,3 +128,28 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+  Section reveals. See components/reveal.tsx.
+
+  Scoped to desktop and to people who have not asked for less movement, so on a
+  phone or with reduced motion the rule never matches and the content is simply
+  never hidden. That is deliberately the DEFAULT state: nothing can strand a
+  block invisible if the stylesheet is the only thing that hides it and JS is the
+  only thing that needs to run to unhide it. The noscript override in layout.tsx
+  closes the last gap.
+*/
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0s);
+    will-change: opacity, transform;
+  }
+
+  [data-reveal]:not([data-shown]) {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}

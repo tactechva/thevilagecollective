@@ -1,24 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
 
 /*
-  A block that eases up as you reach it. Desktop only, by request.
+  A block that eases up when it comes into view, including the ones already on
+  screen when the page loads.
 
-  The obvious build of this is `initial={{ opacity: 0 }}` plus whileInView, and it
-  has a flaw worth avoiding: anything already on screen when the page loads starts
-  invisible and has to fade in after hydration, so the top of the page blinks. And
-  gating it on a matchMedia read in an effect makes that worse, since the server
-  has already sent the content visible and the client then hides it.
+  The hiding is done in CSS, not here, which is the whole trick. An earlier version
+  set the hidden state from JavaScript after mount, so anything already visible had
+  to be hidden first and would blink; to dodge the blink it skipped those blocks
+  entirely, which meant the top of the page never animated at all. Wrong trade.
 
-  So nothing is hidden until we know it is BELOW the fold. On mount this measures:
-  already in view means show it immediately and never animate; further down means
-  snap to hidden with a zero-length transition, which nobody can see because it is
-  off screen, then ease it up when it arrives.
+  Now the stylesheet hides `[data-reveal]` from the very first paint, but ONLY
+  inside `(min-width: 768px) and (prefers-reduced-motion: no-preference)`. So on a
+  phone, or for anyone who asked for less movement, the rule never applies and the
+  content is simply there, never hidden, nothing to go wrong. A noscript override
+  in the layout covers the case where this file never runs at all.
 
-  Phones and anyone asking for reduced motion get the plain element, no wrapper
-  animation at all, which is also the state it renders in if JS never runs.
+  All this component does is decide when to add `data-shown`.
 */
 export function Reveal({
   children,
@@ -30,79 +29,68 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<"open" | "waiting">("open");
+  const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (reduce || !window.matchMedia("(min-width: 768px)").matches) return;
 
-    /*
-      Any part of it already on screen: leave it alone. This was 0.88 of the
-      viewport height, which hid blocks whose top edge sat in the last twelfth of
-      the screen, so a visible sliver of them blinked out on load.
-    */
-    if (el.getBoundingClientRect().top < window.innerHeight) return;
+    /* if the CSS is not hiding anything, there is nothing to reveal */
+    const armed =
+      window.matchMedia("(min-width: 768px)").matches &&
+      window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    if (!armed) {
+      setShown(true);
+      return;
+    }
 
-    setState("waiting");
-
-    /*
-      Opens on arrival, and also on "we are past it".
-
-      IntersectionObserver only reports when the intersection ratio CHANGES, so a
-      single instantaneous jump, End, Cmd+End, an in-page anchor, can take a block
-      from below the fold to above it without the ratio ever leaving zero. The
-      observer stays silent and the block is stranded invisible for the rest of the
-      visit. The scroll listener below is the safety net: any position where the
-      element has entered or passed opens it.
-    */
-    const open = () => {
-      setState("open");
+    const show = () => {
+      setShown(true);
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
-    const onScroll = () => {
-      if (el.getBoundingClientRect().top < window.innerHeight - 80) open();
-    };
 
+    /*
+      IntersectionObserver only reports when the ratio CHANGES, so one
+      instantaneous jump, End, Cmd+End, an in-page anchor, can carry a block from
+      below the fold to above it without the ratio ever leaving zero: the observer
+      stays silent and the block is stranded invisible for the rest of the visit.
+      Hence the scroll listener, and the past-it check on the entry.
+    */
+    const onScroll = () => {
+      if (el.getBoundingClientRect().top < window.innerHeight - 80) show();
+    };
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
-          open();
-        }
+        if (entry.isIntersecting || entry.boundingClientRect.top < 0) show();
       },
       /*
-        A small fixed inset, not a percentage. At -12% the last block on the page
-        could never satisfy it: once scrolling hits the bottom its top is still
-        inside that dead band, so it stayed invisible forever. 80px is always
-        reachable.
+        A fixed inset rather than a percentage: at -12% the last block on the page
+        could never satisfy it, because once scrolling hits the bottom its top is
+        still inside that dead band.
       */
       { rootMargin: "0px 0px -80px 0px" },
     );
+
+    /* observe reports once immediately, which is what eases the first screen in */
     io.observe(el);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
-  }, [reduce]);
+  }, []);
 
   return (
-    <motion.div
+    <div
       ref={ref}
       className={className}
-      /* false, so the first commit paints the open state rather than animating to it */
-      initial={false}
-      animate={state === "waiting" ? { opacity: 0, y: 30 } : { opacity: 1, y: 0 }}
-      transition={
-        state === "waiting"
-          ? { duration: 0 } /* hiding happens off screen; do not animate it */
-          : { duration: 1.05, delay, ease: [0.16, 1, 0.3, 1] }
-      }
+      data-reveal=""
+      {...(shown ? { "data-shown": "" } : null)}
+      style={delay ? ({ "--reveal-delay": `${delay}s` } as React.CSSProperties) : undefined}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
