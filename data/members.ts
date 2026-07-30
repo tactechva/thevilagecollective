@@ -309,6 +309,25 @@ export const MEMBERS: Member[] = [
     seasons: ["getting-married", "celebrating"],
   },
   {
+    slug: "eleanor-henson",
+    title: "Eleanor Henson",
+    tagline: "Realtor With Bunch Real Estate",
+    bio: "Meet Eleanor Henson, a local Realtor who believes home is about so much more than four walls. ❤️🏡 Eleanor and I actually grew up together at church, so I’ve had the privilege of watching her heart for people long before she ever sold homes. Coming from a big, family-oriented family herself, she understands that finding the right home isn’t just about square footage, it’s about finding space for your life. Whether that’s a backyard for the kids, a playroom for the toys, a cozy kitchen for family dinners, or even that quiet little corner to decompress after one of those days. 😉",
+    jessNote: "If you’re looking for someone who genuinely listens and wants to help you find a place that feels like home, Eleanor is someone I’d be happy to recommend.",
+    website: "https://bunchre.com/eleanor/",
+    phone: "757-292-7759",
+    facebook: null,
+    instagram: "https://www.instagram.com/elchensonora/",
+    email: "EleanorHensonRE@gmail.com",
+    image: null,
+    fit: "none",
+    serviceModel: "mobile",
+    serviceArea: "Portsmouth / Hampton Roads",
+    areaConfidence: "V",
+    categories: ["professional", "home"],
+    seasons: ["buying-a-home"],
+  },
+  {
     slug: "elegance-by-emily",
     title: "Elegance By Emily",
     tagline: "Private Hair Salon, Low- Maintenance Color, Bridal Styling",
@@ -810,11 +829,8 @@ export const inSeason = (season: string) => MEMBERS.filter((m) => m.seasons.incl
 export const countIn = (season: string) => inSeason(season).length;
 
 /*
-  The count the copy states.
-
-  Normally this is just MEMBERS.length. It is pinned to 40 while the fortieth
-  business is being added, so every stated count moves together instead of the
-  hero saying one thing and the village page another. Set it back to
-  MEMBERS.length once that record lands.
+  The count the copy states. Derived, so adding a member is a data change only.
+  It was briefly pinned to 40 while Eleanor Henson was being added; that record
+  has landed, so it counts again.
 */
-export const VILLAGE_COUNT = 40;
+export const VILLAGE_COUNT = MEMBERS.length;
