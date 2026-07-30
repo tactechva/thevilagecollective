@@ -5,6 +5,7 @@ import { MEMBERS, VILLAGE_COUNT } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { Sprig, ForgetMeNot } from "@/components/floral";
 import { OG_BASE } from "@/lib/site";
+import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
   title: "Jess",
@@ -70,7 +71,7 @@ export default function AboutPage() {
 
       <section className="px-6 py-16 sm:px-10">
         <div className="mx-auto grid max-w-[1180px] gap-14 lg:grid-cols-2 lg:gap-20">
-          <div>
+          <Reveal>
             <p className="eyebrow">Our story</p>
             <div className="prose-warm mt-7 space-y-6">
               <p className="text-[18px] text-ink">
@@ -88,10 +89,10 @@ export default function AboutPage() {
                 and you can explore every recommendation completely free.
               </p>
             </div>
-          </div>
+          </Reveal>
 
           {/* The village itself as the visual: every real member mark. */}
-          <div className="bg-putty/35 p-6 sm:p-8">
+          <Reveal delay={0.14} className="bg-putty/35 p-6 sm:p-8">
             <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
               {marks.map((m) => (
                 <Link key={m.slug} href={`/village/${m.slug}`} title={m.title} className="group">
@@ -100,12 +101,12 @@ export default function AboutPage() {
               ))}
             </div>
             <p className="eyebrow mt-6">{VILLAGE_COUNT} businesses &middot; Hampton Roads</p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-[70ch]">
+        <Reveal className="mx-auto max-w-[70ch]">
           <p className="eyebrow">Built through real relationships</p>
           <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.9rem)] leading-[1.06]">
             How the village began
@@ -128,9 +129,10 @@ export default function AboutPage() {
               Because every season of life deserves a village.
             </p>
           </div>
-        </div>
+        </Reveal>
 
-        <figure className="mx-auto mt-16 max-w-[1180px]">
+        <Reveal delay={0.1}>
+          <figure className="mx-auto mt-16 max-w-[1180px]">
           <div className="relative aspect-16/9 w-full overflow-hidden ring-1 ring-brass/25">
             <Image
               src="/photos/team-on-the-beach.jpg"
@@ -140,14 +142,15 @@ export default function AboutPage() {
               className="object-cover"
             />
           </div>
-          <figcaption className="eyebrow mt-3">The team · Hampton Roads</figcaption>
-        </figure>
+            <figcaption className="eyebrow mt-3">The team · Hampton Roads</figcaption>
+          </figure>
+        </Reveal>
       </section>
 
       <section className="px-6 py-16 sm:px-10 sm:py-24">
         <div className="mx-auto max-w-[1180px]">
           <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
-            <div>
+            <Reveal>
               <div className="flex items-center gap-3">
                 <ForgetMeNot size={22} />
                 <p className="hand text-[clamp(2rem,3.6vw,2.8rem)] leading-[1.15]">
@@ -183,7 +186,7 @@ export default function AboutPage() {
               </p>
 
               {/* the boys, the dog, the team: the life the letter describes */}
-              <div className="mt-12 grid grid-cols-3 gap-3">
+              <Reveal delay={0.12} className="mt-12 grid grid-cols-3 gap-3">
                 {[
                   ["/photos/jess-and-her-son.jpg", "Jessica and one of her three boys"],
                   ["/photos/jess-and-the-dog.jpg", "Jessica outside with her dog"],
@@ -202,10 +205,10 @@ export default function AboutPage() {
                     />
                   </div>
                 ))}
-              </div>
-            </div>
+              </Reveal>
+            </Reveal>
 
-            <div className="lg:pt-16">
+            <Reveal delay={0.16} className="lg:pt-16">
               <h2 className="display text-[clamp(1.4rem,2.4vw,1.9rem)]">
                 What you&rsquo;ll find here
               </h2>
@@ -243,7 +246,7 @@ export default function AboutPage() {
                   See all {VILLAGE_COUNT}
                 </Link>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
