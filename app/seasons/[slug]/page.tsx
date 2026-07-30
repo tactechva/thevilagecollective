@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SEASONS, SERVICE_MODEL_LABEL, inSeason } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { ForgetMeNot } from "@/components/floral";
+import { OG_BASE } from "@/lib/site";
 
 export function generateStaticParams() {
   return SEASONS.map((s) => ({ slug: s.slug }));
@@ -20,6 +21,8 @@ export async function generateMetadata({
   return {
     title: s.label,
     description: `${s.blurb} ${inSeason(s.slug).length} trusted local businesses in Hampton Roads for this season of life.`,
+    alternates: { canonical: `/seasons/${s.slug}` },
+    openGraph: { ...OG_BASE, url: `/seasons/${s.slug}`, title: s.label, description: s.blurb },
   };
 }
 

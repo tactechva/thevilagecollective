@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Outfit, Beau_Rivage } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { OG_BASE, SITE_URL } from "@/lib/site";
 
 const display = Cormorant_Garamond({
   subsets: ["latin"],
@@ -25,14 +26,31 @@ const hand = Beau_Rivage({
   variable: "--font-hand",
 });
 
+const TITLE = "The Village Collective · Trusted Local Businesses in Hampton Roads";
+const BLURB =
+  "A curated collective of trusted local businesses across Hampton Roads, presented by Bless This Mess Cleaning. Every season of life deserves a village.";
+
+/*
+  metadataBase used to default to thevillagecollective757.com, which does not
+  resolve. Every relative canonical and share URL was therefore pointing at a
+  host that does not exist. The live domain is 757village.com.
+
+  openGraph and twitter live here so every page inherits a card; pages that want
+  their own override title, description and image (member pages use their own
+  logo). Deliberately NO canonical or og:url at this level: metadata is inherited
+  in Next, so a canonical of "/" here would tell crawlers that /village and every
+  member page are all really the home page. Those are set per route.
+
+  The card itself is app/opengraph-image.png, picked up by file convention.
+*/
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://thevillagecollective757.com"),
-  title: {
-    default: "The Village Collective · Trusted Local Businesses in Hampton Roads",
-    template: "%s · The Village Collective",
-  },
-  description:
-    "A curated collective of trusted local businesses across Hampton Roads, presented by Bless This Mess Cleaning. Every season of life deserves a village.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: "%s · The Village Collective" },
+  description: BLURB,
+  applicationName: "The Village Collective",
+  openGraph: { ...OG_BASE, title: TITLE, description: BLURB },
+  twitter: { card: "summary_large_image", title: TITLE, description: BLURB },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

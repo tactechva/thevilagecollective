@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MEMBERS, SEASONS } from "@/data/members";
 import { Sprig, ForgetMeNot } from "@/components/floral";
+import { OG_BASE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Seasons",
   description:
     "Life doesn't happen one service at a time. Find the people you need for the season you're actually in.",
+  alternates: { canonical: "/seasons" },
+  openGraph: { ...OG_BASE, url: "/seasons", title: "Seasons" },
 };
 
 export default function SeasonsPage() {

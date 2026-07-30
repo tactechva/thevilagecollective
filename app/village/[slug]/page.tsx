@@ -11,6 +11,7 @@ import {
 } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { Sprig, ForgetMeNot } from "@/components/floral";
+import { OG_BASE } from "@/lib/site";
 
 export function generateStaticParams() {
   return MEMBERS.map((m) => ({ slug: m.slug }));
@@ -27,9 +28,13 @@ export async function generateMetadata({
   return {
     title: m.title,
     description: `${m.tagline}. ${m.serviceArea}. In The Village Collective, a curated circle of trusted local businesses across Hampton Roads.`,
+    alternates: { canonical: `/village/${m.slug}` },
     openGraph: {
+      ...OG_BASE,
+      url: `/village/${m.slug}`,
       title: m.title,
       description: m.tagline,
+      /* their own mark when they have one, otherwise the site card is inherited */
       images: m.image ? [{ url: m.image }] : undefined,
     },
   };

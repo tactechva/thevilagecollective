@@ -5,6 +5,13 @@ import { spellCount } from "@/lib/spell";
 import { FlowerWorld } from "@/components/flower-world";
 import { Sprig, ForgetMeNot } from "@/components/floral";
 import { MemberPlate } from "@/components/member-plate";
+import { OG_BASE } from "@/lib/site";
+
+/* title and description come from the root layout; this is only the canonical */
+export const metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { ...OG_BASE, url: "/" },
+};
 
 export default function Home() {
   const seasons = SEASONS.map((s) => ({

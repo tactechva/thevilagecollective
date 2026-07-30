@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { MEMBERS, CATEGORIES, VILLAGE_COUNT } from "@/data/members";
 import { VillageIndex } from "@/components/village-index";
 import { Sprig } from "@/components/floral";
+import { OG_BASE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "The Village",
   description:
     `All ${VILLAGE_COUNT} trusted local businesses in The Village Collective, serving families across Hampton Roads. Free to browse, nothing sponsored, nothing ranked.`,
+  alternates: { canonical: "/village" },
+  openGraph: { ...OG_BASE, url: "/village", title: "The Village" },
 };
 
 export default async function VillagePage({

@@ -4,11 +4,14 @@ import Image from "next/image";
 import { MEMBERS, VILLAGE_COUNT } from "@/data/members";
 import { MemberPlate } from "@/components/member-plate";
 import { Sprig, ForgetMeNot } from "@/components/floral";
+import { OG_BASE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Jess",
   description:
     "The Village Collective grew from years of serving families through Bless This Mess Cleaning, and one question that kept coming up: who do you trust?",
+  alternates: { canonical: "/about" },
+  openGraph: { ...OG_BASE, url: "/about", title: "Jess" },
 };
 
 /* Every word on this page is Jessica's own, from her site. Nothing rewritten. */
