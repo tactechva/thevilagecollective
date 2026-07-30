@@ -4,6 +4,7 @@ import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Music } from "@/components/music";
+import { Analytics } from "@vercel/analytics/next";
 import { OG_BASE, SITE_URL } from "@/lib/site";
 
 const display = Cormorant_Garamond({
@@ -66,6 +67,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         {/* in the layout, not the page, so it does not cut off on navigation */}
         <Music />
+        {/*
+          Vercel Web Analytics. The /next entry point rather than /react: it hooks
+          the App Router, so a move between businesses counts as a page view
+          instead of only the first server-rendered load.
+        */}
+        <Analytics />
       </body>
     </html>
   );
