@@ -35,6 +35,13 @@ export function Music() {
   const fade = useRef<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [offered, setOffered] = useState(false); /* has it ever been audible */
+  /*
+    Someone who turned it off on a previous visit. They still need the control, or
+    they cannot undo it: the old build skipped straight past start(), so `offered`
+    stayed false, the button never rendered, and the only way back was clearing
+    site data. A dead end I put there.
+  */
+  const [optedOut, setOptedOut] = useState(false);
 
   /* Ramp rather than jump. Landing on full volume mid-phrase is a jolt. */
   const rampTo = (target: number, ms: number, thenPause = false) => {
@@ -77,7 +84,10 @@ export function Music() {
   /* Only the home page begins it, and only if it was not turned off before. */
   useEffect(() => {
     if (here !== "/") return;
-    if (typeof window !== "undefined" && window.localStorage.getItem(REMEMBER) === "off") return;
+    if (window.localStorage.getItem(REMEMBER) === "off") {
+      setOptedOut(true);
+      return;
+    }
 
     let done = false;
     const events = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
@@ -124,6 +134,7 @@ export function Music() {
       stop();
     } else {
       window.localStorage.setItem(REMEMBER, "on");
+      setOptedOut(false);
       void start();
     }
   };
@@ -133,12 +144,14 @@ export function Music() {
       <audio ref={el} src={TRACK} loop preload="auto" aria-hidden="true" />
 
       {/*
-        Bottom right, not left: the dev overlay sits bottom left. Only appears
-        once the track has actually been audible, so it is never a dead control
-        sitting on the arrival before anything has happened.
+        Bottom right, not left: the dev overlay sits bottom left.
+
+        Shown once the track has been audible, so it is never a dead switch on a
+        first visit before anything has happened, AND shown to anyone who turned it
+        off previously, so that choice is reversible.
       */}
       <AnimatePresence>
-        {offered && (
+        {(offered || optedOut) && (
           <motion.button
             onClick={toggle}
             aria-label={playing ? "Turn the music off" : "Turn the music on"}
