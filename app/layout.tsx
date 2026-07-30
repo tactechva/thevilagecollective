@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Outfit, Beau_Rivage } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { Music } from "@/components/music";
 import { OG_BASE, SITE_URL } from "@/lib/site";
 
 const display = Cormorant_Garamond({
@@ -63,6 +64,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main>{children}</main>
         <Footer />
+        {/* in the layout, not the page, so it does not cut off on navigation */}
+        <Music />
       </body>
     </html>
   );

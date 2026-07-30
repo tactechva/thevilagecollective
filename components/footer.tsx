@@ -66,6 +66,15 @@ export function Footer() {
           {VILLAGE_COUNT} local businesses · Proudly serving Hampton Roads · &copy;{" "}
           {new Date().getFullYear()} The Village Collective
         </p>
+        {/*
+          Keys of Moon release their free tracks under Creative Commons
+          Attribution, so the credit is a licence condition, not a courtesy.
+          Do not remove it while the track is on the site.
+        */}
+        <p className="mt-2 text-[11px] text-ink-faint/80">
+          Music: &ldquo;White Petals&rdquo; by Keys of Moon, licensed under Creative Commons
+          Attribution
+        </p>
       </div>
     </footer>
   );
