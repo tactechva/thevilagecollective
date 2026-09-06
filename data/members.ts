@@ -618,7 +618,7 @@ export const MEMBERS: Member[] = [
   {
     slug: "solidify-learning",
     title: "SOLidify Learning",
-    tagline: "Nurturing Minds. Inspiring Confidence.",
+    tagline: "Reading & Math Tutoring, Preschool Through 12th Grade",
     bio: "SOLidify Learning was founded by local educator Morgan Dietz, whose passion for helping children succeed has led her to invest back into the community she proudly calls home. It is a tutoring practice for students from preschool through 12th grade, covering phonics and spelling, reading, comprehension and vocabulary, and math from the primary grades up through high school. Every student starts with testing, so sessions go at what they actually need rather than what they have already mastered, and the work is deliberately hands-on: manipulatives, books, writing in shaving cream, and a five-minute play break partway through. They will also sit in on IEP and 504 meetings and advocate for your child, at no charge while a student is enrolled.",
     jessNote: null,
     website: "https://www.solidifylearning.com/",
