@@ -396,8 +396,8 @@ export const MEMBERS: Member[] = [
     facebook: null,
     instagram: null,
     email: null,
-    /* awaiting the logo file; the plate falls back to his initials until then */
-    image: null,
+    image: "/members/gws-custom-builds.webp",
+    /* a circular badge on its own cream ground, which nearly matches the plate */
     fit: "contain",
     serviceModel: "onsite",
     serviceArea: "Hampton Roads & Moyock, NC",
