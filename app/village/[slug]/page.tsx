@@ -180,6 +180,12 @@ function Contact({ member: m }: { member: Member }) {
   const actions = [
     m.website && { href: m.website, label: "Visit their site", primary: true },
     tel && { href: tel, label: m.phone as string, primary: !m.website },
+    /* a member's own labelled destinations lead when there is no site or phone */
+    ...(m.links ?? []).map((l, i) => ({
+      href: l.href,
+      label: l.label,
+      primary: !m.website && !tel && i === 0,
+    })),
     m.instagram && { href: m.instagram, label: "Instagram" },
     m.facebook && { href: m.facebook, label: m.facebookIsGroup ? "Facebook group" : "Facebook" },
     m.email && { href: `mailto:${m.email}`, label: "Email" },

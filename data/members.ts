@@ -15,6 +15,14 @@ export type Member = {
  facebookIsGroup?: boolean;
  instagram: string | null;
  email: string | null;
+ /*
+   Extra labelled destinations, for a member whose services book in different
+   places. Nicole takes massage bookings on GlossGenius and doula consultations
+   on a separate form; one `website` field cannot say which is which, and an
+   unlabelled second button would be a coin toss for whoever is trying to reach
+   her about the right thing.
+ */
+ links?: { label: string; href: string }[];
  image: string | null;
  /** "contain" letterboxes wide/tall marks so wordmarks never get chopped. */
  fit: "contain" | "cover" | "none";
@@ -148,11 +156,17 @@ export const MEMBERS: Member[] = [
     facebook: null,
     instagram: "https://www.instagram.com/anointed_handsmobilemassage/",
     email: null,
+    /* utm parameters stripped: they tag the click as coming from her Instagram
+       bio, and carrying them here would credit Instagram for village traffic */
+    links: [
+      { label: "Book a massage", href: "https://anointedhandsmobilemassage.glossgenius.com/" },
+      { label: "Doula consult", href: "https://form.jotform.com/yourdoulacole/DoulaIntroconsultform" },
+    ],
     image: "/members/anointed-hands-mobile-massage.webp",
     /* a dark square logo with fine type; cover would crop the wordmark off */
     fit: "contain",
     serviceModel: "mobile",
-    serviceArea: "Hampton Roads",
+    serviceArea: "Virginia Beach & Hampton Roads",
     areaConfidence: "V",
     categories: ["wellness", "family"],
     seasons: ["caring-for-yourself", "welcoming-a-baby"],
